@@ -53,7 +53,7 @@ class Blockchain:
         # Generate random number to be used as node_id
         self.node_id = str(uuid4()).replace('-', '')
         # Create genesis block
-        self.create_block(0, '00')
+        # self.create_block(0, '00')
 
     def register_node(self, node_url):
         """
@@ -224,6 +224,10 @@ class Blockchain:
         return genesis_block
 
     def mining(self):
+        # Restore chain if empty
+        if self.chain == []:
+            self.restore_chain()
+        
         while True:
             transaction = []
             latest_block = self.chain[-1]
@@ -255,18 +259,43 @@ class Blockchain:
 
     def restore_chain(self):
         chaindata_dir = conf.CHAINDATA_DIR
-        for filename in os.listdir(chaindata_dir):
-            with open(filename) as file:
+        total_block = 0
+        previous_block = None
+        for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+            with open('%s%s' %(conf.CHAINDATA_DIR, filename)) as file:
                 block_data = json.load(file)
-                block = Block(
-                    block_data['index'],
-                    block_data['timestamp'],
-                    block_data['transaction'],
-                    block_data['previous_hash'],
-                    block_data['diff']
+                current_block = Block(
+                    index = block_data['index'],
+                    timestamp = block_data['timestamp'],
+                    transaction = block_data['transaction'],
+                    previous_hash = block_data['previous_hash'],
+                    diff = block_data['diff'],
+                    hash = block_data['hash'],
+                    nonce = block_data['nonce']
                 )
-                if not block.is_valid:
-                    print()
+                file.close()
+                if not current_block.is_valid():
+                    print(' - Error: current block is invalid')
+                    print(' - Error: block #%s is invalid' % (block_data['index']))
+                    sys.exit()
+                
+                if i == 0:
+                    previous_block = current_block
+                    
+                if i != 0 and previous_block.hash != current_block.previous_hash:
+                    print(' - Error: block #%s and block #%s is not linked' % (current_block.index, previous_block.index))
+                    print(' - Error: block #%s is invalid' %
+                          (block_data['index']))
+                    sys.exit()
+                
+                if i != 0:
+                    previous_block = current_block
+                
+                self.chain.append(current_block)
+                total_block += 1
+        print(' - Restore chain successfully!')
+        print(' - Total block: %s' %(total_block))
+        
 
 # Instantiate the Blockchain
 blockchain = Blockchain()

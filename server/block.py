@@ -60,6 +60,7 @@ class Block:
     def save(self):
         index_string = str(self.index).zfill(6)
         filename = '%s%s.json' % (conf.CHAINDATA_DIR, index_string)
+        print(" - New block saved to %s" % (filename))
         data = self.to_dict()
         file = open(filename, 'w')
         file.write(json.dumps(data, indent=4))
