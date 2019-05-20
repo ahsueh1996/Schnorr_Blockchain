@@ -37,11 +37,12 @@ def new_transaction():
     # Create a new Transaction
     
     transaction_result = transaction.submit_transaction(values['sender_address'], values['recipient_address'], values['amount'], values['signature'])
-
+	
     if transaction_result == False:
         response = {'message': 'Invalid Transaction!'}
         return jsonify(response), 406
     else:
+
         response = {'message': 'Transaction will be added to Block '+ str(transaction_result)}
         return jsonify(response), 201
 

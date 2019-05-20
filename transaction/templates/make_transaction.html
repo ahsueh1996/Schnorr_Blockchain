@@ -251,19 +251,19 @@
               dataType : 'json',
               data: $('#confirmation_transaction_form').serialize(),
               success: function(response){
-
+                console.log(response)
                 // //reset both forms
-                // $("#transaction_form")[0].reset();
-                // $("#confirmation_transaction_form")[0].reset();
+                $("#transaction_form")[0].reset();
+                $("#confirmation_transaction_form")[0].reset();
                 
-                // //clean text boxes
-                // $("#sender_address").val("");
-                // $("#sender_private_key").val("");
-                // $("#recipient_address").val("");
-                // $("#amount").val("");
+                //clean text boxes
+                $("#sender_address").val("");
+                $("#sender_private_key").val("");
+                $("#recipient_address").val("");
+                $("#amount").val("");
 
-                // $("#basicModal").modal('hide');
-                // $("#success_transaction_modal").modal('show');
+                $("#basicModal").modal('hide');
+                $("#success_transaction_modal").modal('show');
                 
               },
               error: function(error){

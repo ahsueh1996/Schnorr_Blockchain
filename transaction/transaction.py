@@ -1,5 +1,5 @@
 '''
-title           : blockchain_client.py
+title           : transaction.py
 description     : A blockchain client implemenation, with the following features
                   - Wallets generation using Public/Private key encryption (based on RSA algorithm)
                   - Generation of transactions with RSA encryption      
@@ -7,9 +7,9 @@ author          : Adil Moujahid
 date_created    : 20180212
 date_modified   : 20180309
 version         : 0.3
-usage           : python blockchain_client.py
-                  python blockchain_client.py -p 8080
-                  python blockchain_client.py --port 8080
+usage           : python run.py
+                  python run.py -p 8080
+                  python run.py --port 8080
 python_version  : 3.6.1
 Comments        : Wallet generation and transaction signature is based on [1]
 References      : [1] https://github.com/julienr/ipynb_playground/blob/master/bitcoin/dumbcoin/dumbcoin.ipynb
@@ -67,6 +67,8 @@ class Transaction:
         h = SHA.new(str(self.to_dict()).encode('utf8'))
         return binascii.hexlify(signer.sign(h)).decode('ascii')
 
+    # def create_address(self, publickey):
+        # return ripemd160(SHA(publickey))
 
     def submit_transaction(self, sender_address, recipient_address, value, signature):
             """
@@ -76,6 +78,42 @@ class Transaction:
             transaction = OrderedDict({'sender_address': sender_address, 
                                         'recipient_address': recipient_address,
                                         'value': value})
+            transaction1 = OrderedDict(
+                                        {
+                                            "locktime": '0',# 4 bytes   Set a minimum block height or Unix time that this transaction can be included in.
+                                            "txid": "c1b4e695098210a31fe02abffe9005cffc051bbe86ff33e173155bcbdc5821e3",
+                                            "hash": "c1b4e695098210a31fe02abffe9005cffc051bbe86ff33e173155bcbdc5821e3",
+                                            "version": len(self.transactions),
+                                            "size": 191,
+                                            "vsize": 191,
+                                            "weight": 764,
+                                            'input_count':1,
+                                            'input':OrderedDict({
+                                                "txid": "fc9e4f9c334d55c1dc535bd691a1c159b0f7314c54745522257a905e18a56779",# 32 bytes	Refer to an existing transaction.
+                                                "vout": 1,# 4 bytes	Select one of its outputs.
+                                                "scriptSig": {
+                                                    "asm": "304402206a2eb16b7b92051d0fa38c133e67684ed064effada1d7f925c842da401d4f22702201f196b10e6e4b4a9fff948e5c5d71ec5da53e90529c8dbd122bff2b1d21dc8a9[ALL] 039b7bcd0824b9a9164f7ba098408e63e5b7e3cf90835cceb19868f54f8961a825",
+                                                    "hex": "47304402206a2eb16b7b92051d0fa38c133e67684ed064effada1d7f925c842da401d4f22702201f196b10e6e4b4a9fff948e5c5d71ec5da53e90529c8dbd122bff2b1d21dc8a90121039b7bcd0824b9a9164f7ba098408e63e5b7e3cf90835cceb19868f54f8961a825"
+                                                },  # A script that unlocks the input.                          
+                                                'Sequence': signature # 4 bytes	
+                                            }),
+                                            'output_count':1,
+                                            'output':OrderedDict({
+                                                "value": float(value) /10**8 ,# 8 bytes	The value of the output in satoshis
+                                                "n": 0,
+                                                "scriptPubKey": {
+                                                    "asm": "OP_DUP OP_HASH160 db4d1141d0048b1ed15839d0b7a4c488cd368b0e OP_EQUALVERIFY OP_CHECKSIG",
+                                                    "hex": "76a914db4d1141d0048b1ed15839d0b7a4c488cd368b0e88ac",
+                                                    "reqSigs": 1,
+                                                    "type": "pubkeyhash",
+                                                    "addresses": [
+                                                        "1LzZJkQfz9ahY2SfetBHLcwyWmQRE9CwfU"
+                                                    ]
+                                                }#           A script that locks the output.
+                                            }),
+                                            
+                                        }
+                                    )
             #Reward for mining a block
             if sender_address == conf.MINING_SENDER:
                 self.transactions.append(transaction)
@@ -85,8 +123,7 @@ class Transaction:
                 transaction_verification = self.verify_transaction_signature(sender_address, signature, transaction)
 
                 if transaction_verification:
-                    self.transactions.append(transaction)
-                    return self.transactions
+                    self.transactions.append(transaction1)
                     return len(self.chain) + 1
                 else:
                     return False
