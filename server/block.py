@@ -1,25 +1,26 @@
 import hashlib as hasher
 import datetime as date
-import config as conf
+# import config as conf
 import json
 import sys
+from config import *
 
 
 class Block:
     def __init__(self, **kwargs):
-        if not kwargs.keys() & {'index', 'timestamp', 'previous_hash', 'transaction', 'diff'}:
+        if not kwargs.keys() & BLOCK_VAR_CONVERSIONS:
             raise ValueError
         self.index = kwargs['index']
         self.timestamp = kwargs['timestamp']
         self.previous_hash = kwargs['previous_hash']
-        self.transaction = kwargs['transaction']
+        self.transactions = kwargs['transactions']
         self.diff = kwargs['diff']
-        
+
         if 'nonce' in kwargs:
             self.nonce = kwargs['nonce']
         else:
             self.nonce = 0
-        
+
         if 'hash' in kwargs:
             self.hash = kwargs['hash']
         else:
@@ -33,7 +34,7 @@ class Block:
 
     def hash_block(self, nonce):
         sha = hasher.sha256()
-        data = (str(self.index) + str(self.timestamp) + str(self.transaction) +
+        data = (str(self.index) + str(self.timestamp) + str(self.transactions) +
                 str(self.previous_hash) + str(self.diff) + str(nonce)).encode('utf-8')
         sha.update(data)
         return sha.hexdigest()
@@ -42,7 +43,7 @@ class Block:
 
         print(" - Start mining")
         nonce = 0
-        diff = conf.MINING_DIFFICULTY
+        diff = MINING_DIFFICULTY
         true_hash = ''
 
         while True:
@@ -59,7 +60,7 @@ class Block:
 
     def save(self):
         index_string = str(self.index).zfill(6)
-        filename = '%s%s.json' % (conf.CHAINDATA_DIR, index_string)
+        filename = '%s%s.json' % (CHAINDATA_DIR, index_string)
         print(" - New block saved to %s" % (filename))
         data = self.to_dict()
         file = open(filename, 'w')
@@ -72,7 +73,7 @@ class Block:
         block_data['hash'] = str(self.hash)
         block_data['previous_hash'] = str(self.previous_hash)
         block_data['timestamp'] = str(self.timestamp)
-        block_data['transaction'] = str(self.transaction)
+        block_data['transactions'] = self.transactions
         block_data['diff'] = str(self.diff)
         block_data['nonce'] = str(self.nonce)
 
@@ -83,3 +84,14 @@ class Block:
         block_nonce = self.nonce
         guess_hash = self.hash_block(block_nonce)
         return guess_hash == block_hash
+    
+    def __eq__(self, other):
+        return (self.index == other.index and
+                self.timestamp == other.timestamp and
+                self.previous_hash == other.previous_hash and
+                self.hash == other.hash and
+                self.nonce == other.nonce and
+                self.transactions == other.transactions)
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)

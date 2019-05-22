@@ -48,7 +48,7 @@ def get_transactions():
 @app.route('/chain', methods=['GET'])
 def full_chain():
     response = {
-        'chain': blockchain.chain,
+        'chain': blockchain.block_list_dict(),
         'length': len(blockchain.chain),
     }
     return jsonify(response), 200

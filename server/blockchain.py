@@ -39,7 +39,7 @@ import datetime as date
 import glob
 import sys
 
-import config as conf
+from config import *
 from block import Block
 
 
@@ -88,7 +88,7 @@ class Blockchain:
                                    'value': value})
 
         # Reward for mining a block
-        if sender_address == conf.MINING_SENDER:
+        if sender_address == MINING_SENDER:
             self.transactions.append(transaction)
             return len(self.chain) + 1
         # Manages transactions from wallet to another wallet
@@ -139,7 +139,7 @@ class Blockchain:
 
         return nonce
 
-    def valid_proof(self, transactions, last_hash, nonce, difficulty=conf.MINING_DIFFICULTY):
+    def valid_proof(self, transactions, last_hash, nonce, difficulty=MINING_DIFFICULTY):
         """
         Check if a hash value satisfies the mining conditions. This function is used within the proof_of_work function.
         """
@@ -172,7 +172,7 @@ class Blockchain:
             transactions = [OrderedDict(
                 (k, transaction[k]) for k in transaction_elements) for transaction in transactions]
 
-            if not self.valid_proof(transactions, block['previous_hash'], block['nonce'], conf.MINING_DIFFICULTY):
+            if not self.valid_proof(transactions, block['previous_hash'], block['nonce'], MINING_DIFFICULTY):
                 return False
 
             last_block = block
@@ -216,9 +216,9 @@ class Blockchain:
         genesis_block = Block(
             index = '0',
             timestamp = date.datetime.now(),
-            transaction = [],
+            transactions = [],
             previous_hash = '',
-            diff = conf.MINING_DIFFICULTY)
+            diff = MINING_DIFFICULTY)
         genesis_block = genesis_block.mine()
         self.chain.append(genesis_block)
         return genesis_block
@@ -229,22 +229,22 @@ class Blockchain:
             self.restore_chain()
         
         while True:
-            transaction = []
+            transactions = []
             latest_block = self.chain[-1]
             next_index = int(latest_block.index) + 1
             next_block = Block(
                 index = str(next_index),
                 timestamp = date.datetime.now(),
-                transaction = transaction,
+                transactions = transactions,
                 previous_hash = latest_block.hash,
-                diff = conf.MINING_DIFFICULTY
+                diff = MINING_DIFFICULTY
             )
             next_block = next_block.mine()
             self.chain.append(next_block)
             next_block.save()
     
     def start(self):
-        chaindata_dir = conf.CHAINDATA_DIR
+        chaindata_dir = CHAINDATA_DIR
 
         # check if chaindata folder existed, create if not
         if not os.path.exists(chaindata_dir):
@@ -258,16 +258,16 @@ class Blockchain:
         self.mining()
 
     def restore_chain(self):
-        chaindata_dir = conf.CHAINDATA_DIR
+        chaindata_dir = CHAINDATA_DIR
         total_block = 0
         previous_block = None
         for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
-            with open('%s%s' %(conf.CHAINDATA_DIR, filename)) as file:
+            with open('%s%s' %(CHAINDATA_DIR, filename)) as file:
                 block_data = json.load(file)
                 current_block = Block(
                     index = block_data['index'],
                     timestamp = block_data['timestamp'],
-                    transaction = block_data['transaction'],
+                    transactions = block_data['transactions'],
                     previous_hash = block_data['previous_hash'],
                     diff = block_data['diff'],
                     hash = block_data['hash'],
@@ -296,6 +296,44 @@ class Blockchain:
         print(' - Restore chain successfully!')
         print(' - Total block: %s' %(total_block))
         
+    def save(self):
+        for block in self.chain:
+            block.save()
+        return True
+    
+    def find_block_by_index(self, index):
+        if len(self.chain) <= index:
+            return self.chain[index]
+        return False
+    
+    def find_block_by_hash(self, hash):
+        for block in self.chain:
+            if block.hash == hash:
+                return block
+        
+        return False
+    
+    def __len__(self):
+        return len(self.chain)
+
+    def __eq__(self, other):
+        if len(self) != len(other):
+            return False
+        for self_block, other_block in zip(self.chain, other.chain):
+            if not self_block == other_block:
+                return False
+            
+        return True
+    
+    def __gt_(self, other):
+        return len(self.chain) > len(other.chain)
+
+    def add_block(self, block):
+        self.chain.append(block)
+        return True
+    
+    def block_list_dict(self):
+        return [block.to_dict() for block in self.chain]
 
 # Instantiate the Blockchain
 blockchain = Blockchain()
