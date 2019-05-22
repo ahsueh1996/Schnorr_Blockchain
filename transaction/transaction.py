@@ -30,8 +30,10 @@ from flask import Flask, jsonify, request, render_template
 import sys
 sys.path.append('../server/')
 import config as conf
-
-
+import hashlib
+import binascii
+import struct
+from tools import *
 class Transaction:
 
     def __init__(self, sender_address="", sender_private_key="", recipient_address="", value=""):
@@ -41,6 +43,22 @@ class Transaction:
         self.value = value
         self.transactions = []
         self.chain = []
+
+        self.continueParsing = True
+        self.magicNum = 0
+        self.blocksize = 0
+        self.blockheader = ''
+        self.txCount = 0
+        self.Txs = []
+
+
+    def gettransactionID(self,rawhax):
+        string	= rawhax
+        hash1	=encrypt_string(string)
+        hash2	=encrypt_string(hash1)
+        transactionid	= SwapEndian(hash2)
+        response = {'message': transactionid }
+        return jsonify(response), 201
 
     def __getattr__(self, attr):
         return self.data[attr]
