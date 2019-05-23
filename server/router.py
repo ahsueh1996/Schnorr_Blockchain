@@ -3,6 +3,8 @@ from flask_cors import CORS
 from blockchain import blockchain
 
 import config as conf
+import sync
+import json
 
 # Instantiate the Node
 app = Flask(__name__)
@@ -117,3 +119,9 @@ def get_nodes():
     nodes = list(blockchain.nodes)
     response = {'nodes': nodes}
     return jsonify(response), 200
+
+@app.route('/blockchain.json', methods=['GET'])
+def get_blockchain():
+    local_chain = sync.sync_local()
+    json_blocks = json.dumps(local_chain.block_list_dict())
+    return json_blocks
