@@ -34,6 +34,9 @@ import hashlib
 import binascii
 import struct
 from tools import *
+import json
+from wallet import Wallet
+
 class Transaction:
 
     def __init__(self, sender_address="", sender_private_key="", recipient_address="", value=""):
@@ -67,11 +70,20 @@ class Transaction:
         return OrderedDict({'sender_address': self.sender_address,
                             'recipient_address': self.recipient_address,
                             'value': self.value})
+    def to_dict2(self):
+        wallet_sender = get_wallet_from_address(self.sender_address)
+        wallet_recipient = get_wallet_from_address(self.recipient_address)
+
+
+        return OrderedDict({'sender_address': wallet_sender['public_key'],
+                            'recipient_address': wallet_recipient['public_key'],
+                            'value': self.value})
     def verify_transaction_signature(self, sender_address, signature, transaction):
         """
         Check that the provided signature corresponds to transaction
         signed by the public key (sender_address)
         """
+        sender_address =get_wallet_from_address(sender_address)['public_key']
         public_key = RSA.importKey(binascii.unhexlify(sender_address))
         verifier = PKCS1_v1_5.new(public_key)
         h = SHA.new(str(transaction).encode('utf8'))
@@ -80,9 +92,10 @@ class Transaction:
         """
         Sign transaction with private key
         """
-        private_key = RSA.importKey(binascii.unhexlify(self.sender_private_key))
+        wallet = get_wallet_from_address(self.sender_address)
+        private_key = RSA.importKey(binascii.unhexlify(wallet['private_key']))
         signer = PKCS1_v1_5.new(private_key)
-        h = SHA.new(str(self.to_dict()).encode('utf8'))
+        h = SHA.new(str(self.to_dict2()).encode('utf8'))
         return binascii.hexlify(signer.sign(h)).decode('ascii')
 
     # def create_address(self, publickey):
@@ -92,19 +105,25 @@ class Transaction:
             """
             Add a transaction to transactions array if the signature verified
             """
+            self.sender_address=sender_address
+            self.recipient_address=recipient_address
+            self.value=value
 
-            transaction = OrderedDict({'sender_address': sender_address, 
+             
+            transaction = OrderedDict({ 'sender_address': sender_address, 
                                         'recipient_address': recipient_address,
-                                        'value': value})
+                                        'value': value,
+                                        'timestamp':strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                                        })
+            transaction_verification =self.to_dict2()
+
+
             transaction1 = OrderedDict(
                                         {
                                             "locktime": '0',# 4 bytes   Set a minimum block height or Unix time that this transaction can be included in.
                                             "txid": "c1b4e695098210a31fe02abffe9005cffc051bbe86ff33e173155bcbdc5821e3",
                                             "hash": "c1b4e695098210a31fe02abffe9005cffc051bbe86ff33e173155bcbdc5821e3",
                                             "version": len(self.transactions),
-                                            "size": 191,
-                                            "vsize": 191,
-                                            "weight": 764,
                                             'input_count':1,
                                             'input':OrderedDict({
                                                 "txid": "fc9e4f9c334d55c1dc535bd691a1c159b0f7314c54745522257a905e18a56779",# 32 bytes	Refer to an existing transaction.
@@ -138,13 +157,30 @@ class Transaction:
                 return len(self.chain) + 1
             #Manages transactions from wallet to another wallet
             else:
-                transaction_verification = self.verify_transaction_signature(sender_address, signature, transaction)
+
+                transaction_verification = self.verify_transaction_signature(sender_address, signature, transaction_verification)
 
                 if transaction_verification:
-                    self.transactions.append(transaction1)
+                    list_of_files = glob.glob(conf.TRANSACTION_DIR+'/*') # * means all if need specific format then *.csv
+                    if(list_of_files):
+                        latest_file = max(list_of_files, key=os.path.getctime) 
+                        latest_file =latest_file.replace(conf.TRANSACTION_DIR, '')
+                        latest_file =latest_file.replace('.json', '')
+                        latest_file = int(latest_file) +1
+                    else:
+                        latest_file = 1
+
+                    filename = "{}{}.json".format(conf.TRANSACTION_DIR,latest_file ) 
+
+                    print(" - New wallet saved to %s" % (filename))
+                    data = transaction
+                    file = open(filename, 'w')
+                    file.write(json.dumps(data, indent=4))
+                    file.close()
+
+                    
                     return len(self.chain) + 1
                 else:
                     return False
-
 
 

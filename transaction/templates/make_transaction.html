@@ -208,7 +208,7 @@
     <!-- Bootstrap core JavaScript -->
     <script src="/static/vendor/jquery/jquery.min.js"></script>
     <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
+    <script src="/static/vendor/bootstrap/js/sweetalert2.all.min.js"></script>
 
     <script>
 
@@ -231,7 +231,11 @@
                 
               },
               error: function(error){
-                console.log(error);
+                Swal.fire({
+                  type: 'error',
+                  title: 'Oops...',
+                  text: error.responseText,
+                })
               }
             });
 

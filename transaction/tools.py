@@ -3,6 +3,41 @@ import config as conf
 import hashlib
 import binascii
 import struct
+import sys
+from binascii import hexlify, unhexlify
+import base58
+from time import gmtime, strftime
+import json
+import glob
+import os
+b58_digits = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+
+
+def RIPEMD160(string):
+	string = binascii.a2b_hex(string)
+	h = hashlib.new('ripemd160')
+	h.update(string)
+	return h.hexdigest()
+
+def SHA256(string):
+	string = binascii.a2b_hex(string)
+	return hashlib.sha256(string).hexdigest()
+
+def create_address(string):
+	
+	sha256		= SHA256(string)
+	ripemd160	= RIPEMD160(sha256)
+	add00		= "00"+ripemd160
+
+	sha256		=SHA256(add00)
+
+	sha256		=SHA256(sha256)
+
+	string		=add00 + sha256[:8]
+	string = binascii.a2b_hex(string)
+
+
+	return base58.b58encode(string).decode("utf-8")		
 
 def encrypt_string(hash_string):
     #binary
@@ -51,3 +86,16 @@ def varint(stream):
 
 def hashStr(bytebuffer):
 	return ''.join(('%02x'%ord(a)) for a in bytebuffer)
+
+
+
+
+#wallet
+def get_wallet_from_address(address):
+    with open(conf.WALLET_DIR + address+'.json') as file:
+        wallet = json.load(file)
+        return wallet
+        file.close()
+	
+
+	

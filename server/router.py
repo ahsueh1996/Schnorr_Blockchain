@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from blockchain import blockchain
-
+import os
+import json
 import config as conf
 
 # Instantiate the Node
@@ -40,8 +41,12 @@ def new_transaction():
 @app.route('/transactions/get', methods=['GET'])
 def get_transactions():
     #Get transactions from transactions pool
-    transactions = blockchain.transactions
-
+    chaindata_dir = '../transaction/'+conf.TRANSACTION_DIR
+    transactions  = []   
+    for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+        with open('%s%s' %(chaindata_dir, filename)) as file:
+            transaction = json.load(file)
+            transactions.append(transaction)
     response = {'transactions': transactions}
     return jsonify(response), 200
 

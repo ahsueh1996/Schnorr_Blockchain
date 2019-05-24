@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from transaction import Transaction
+from wallet import Wallet
+
 import binascii
 
 import Crypto
@@ -11,6 +13,7 @@ from Crypto.Signature import PKCS1_v1_5
 
 import requests
 import config as conf
+from tools import *
 
 app = Flask(__name__)
 
@@ -44,7 +47,8 @@ def new_transaction():
     # Create a new Transaction
     
     transaction_result = transaction.submit_transaction(values['sender_address'], values['recipient_address'], values['amount'], values['signature'])
-	
+    return jsonify(transaction_result)
+
     if transaction_result == False:
         response = {'message': 'Invalid Transaction!'}
         return jsonify(response), 406
@@ -77,10 +81,28 @@ def new_wallet():
 	random_gen = Crypto.Random.new().read
 	private_key = RSA.generate(1024, random_gen)
 	public_key = private_key.publickey()
+
+	private_key = binascii.hexlify(private_key.exportKey(format='DER')).decode('ascii')
+	public_key = binascii.hexlify(public_key.exportKey(format='DER')).decode('ascii')
+
+
+
+	address 	= create_address(public_key)
 	response = {
-		'private_key': binascii.hexlify(private_key.exportKey(format='DER')).decode('ascii'),
-		'public_key': binascii.hexlify(public_key.exportKey(format='DER')).decode('ascii')
+		'private_key': 	private_key,
+		'public_key': 	public_key,
+		'address'	:	address
 	}
+	array={}
+	array['private_key']=private_key
+	array['public_key']=public_key
+
+	array['address']=address
+	array['timestamp']=strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+	wallet = Wallet(array)
+	wallet.save_wallet()
+
 
 	return jsonify(response), 200
 
@@ -94,6 +116,25 @@ def generate_transaction():
 
 	transaction = Transaction(sender_address, sender_private_key, recipient_address, value)
 
-	response = {'transaction': transaction.to_dict(), 'signature': transaction.sign_transaction()}
+	
+	array={}
+	array['address']=sender_address
+	array['public_key']=''
+	array['private_key']=sender_private_key
+	array['timestamp']=1
+	check_wallet_out= Wallet(array)
+	check_wallet_out=check_wallet_out.ischeck_address()
 
-	return jsonify(response), 200
+	array['address']=recipient_address
+	check_wallet_in= Wallet(array)
+	check_wallet_in=check_wallet_in.ischeck_address()
+	try:
+		response = {'transaction': transaction.to_dict(), 'signature': transaction.sign_transaction()}
+		if(check_wallet_out and check_wallet_in ):
+			return jsonify(response), 200
+		else:
+			return "Not address or private key" ,500
+	except:
+		return "Not address or private key" ,500
+	
+		
