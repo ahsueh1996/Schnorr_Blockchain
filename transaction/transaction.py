@@ -161,15 +161,15 @@ class Transaction:
                 transaction_verification = self.verify_transaction_signature(sender_address, signature, transaction_verification)
 
                 if transaction_verification:
-                    list_of_files = glob.glob(conf.TRANSACTION_DIR+'/*') # * means all if need specific format then *.csv
+                    path =conf.TRANSACTION_DIR
+                    file_list = os.listdir(path)
+                    list_of_files=sorted(file_list) 
                     if(list_of_files):
-                        latest_file = max(list_of_files, key=os.path.getctime) 
-                        latest_file =latest_file.replace(conf.TRANSACTION_DIR, '')
+                        latest_file = list_of_files[-1]
                         latest_file =latest_file.replace('.json', '')
                         latest_file = int(latest_file) +1
                     else:
                         latest_file = 1
-
                     filename = "{}{}.json".format(conf.TRANSACTION_DIR,latest_file ) 
 
                     print(" - New wallet saved to %s" % (filename))
