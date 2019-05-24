@@ -18,3 +18,7 @@ WALLET_VAR_CONVERSIONS = {'private_key', 'public_key',
 TRANSACTION_DIR = 'transaction_wait/'
 TRANSACTION_VAR_CONVERSIONS = {'sender_address', 'recipient_address',
                          'value', 'timestamp'}                         
+PEERS = [
+    'http://localhost:5000/',
+    'http://localhost:5001/',
+]

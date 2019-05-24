@@ -312,7 +312,35 @@ class Blockchain:
                 return block
         
         return False
+
+    def add_block(self, block):
+        self.chain.append(block)
+        return True
     
+    def block_list_dict(self):
+        return [block.to_dict() for block in self.chain]
+    
+    def is_valid_chain(self):
+        previous_block = None
+        for i, block in enumerate(self.chain):
+            if not block.is_valid():
+                print(' - Error: block #%s is invalid' % (block['index']))
+                return False
+            
+            if i == 0:
+                previous_block = block
+                
+            if i != 0 and previous_block.hash != block.previous_hash:
+                print(' - Error: block #%s and block #%s is not linked' %
+                      (block.index, previous_block.index))
+                print(' - Error: block #%s is invalid' %
+                      (block['index']))
+                return False
+            
+            if i != 0:
+                previous_block = block
+        return True
+
     def __len__(self):
         return len(self.chain)
 
@@ -322,18 +350,11 @@ class Blockchain:
         for self_block, other_block in zip(self.chain, other.chain):
             if not self_block == other_block:
                 return False
-            
+
         return True
-    
+
     def __gt_(self, other):
         return len(self.chain) > len(other.chain)
-
-    def add_block(self, block):
-        self.chain.append(block)
-        return True
     
-    def block_list_dict(self):
-        return [block.to_dict() for block in self.chain]
-
 # Instantiate the Blockchain
 blockchain = Blockchain()
