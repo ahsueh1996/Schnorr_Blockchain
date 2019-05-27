@@ -230,6 +230,14 @@ class Blockchain:
         
         while True:
             transactions = []
+            remove_trans = []
+            chaindata_dir = '../transaction/'+conf.TRANSACTION_DIR
+            for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+                with open('%s%s' %(chaindata_dir, filename)) as file:
+                    remove_trans.append(filename)
+
+                    transaction = json.load(file)
+                    transactions.append(transaction)
             latest_block = self.chain[-1]
             next_index = int(latest_block.index) + 1
             next_block = Block(
@@ -242,10 +250,11 @@ class Blockchain:
             next_block = next_block.mine()
             self.chain.append(next_block)
             next_block.save()
-    
+            for filename in remove_trans:
+                os.remove('../transaction/'+conf.TRANSACTION_DIR +filename)
+
     def start(self):
         chaindata_dir = CHAINDATA_DIR
-
         # check if chaindata folder existed, create if not
         if not os.path.exists(chaindata_dir):
             os.mkdir(chaindata_dir)
