@@ -49,6 +49,7 @@ def get_transactions():
         with open('%s%s' %(chaindata_dir, filename)) as file:
             transaction = json.load(file)
             transactions.append(transaction)
+    transactions=sorted(transactions, key=lambda x: x['value'],reverse=True)
     response = {'transactions': transactions}
     return jsonify(response), 200
 
@@ -63,12 +64,12 @@ def full_chain():
 @app.route('/mine', methods=['GET'])
 def mine():
     # We run the proof of work algorithm to get the next proof...
+
     last_block = blockchain.chain[-1]
     nonce = blockchain.proof_of_work()
-
+    
     # We must receive a reward for finding the proof.
     blockchain.submit_transaction(sender_address=conf.MINING_SENDER, recipient_address=blockchain.node_id, value=conf.MINING_REWARD, signature="")
-
     # Forge the new Block by adding it to the chain
     previous_hash = blockchain.hash(last_block)
     block = blockchain.create_block(nonce, previous_hash)

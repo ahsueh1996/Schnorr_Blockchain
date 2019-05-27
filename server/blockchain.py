@@ -229,15 +229,23 @@ class Blockchain:
             self.restore_chain()
         
         while True:
-            transactions = []
-            remove_trans = []
-            chaindata_dir = '../transaction/'+conf.TRANSACTION_DIR
-            for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
-                with open('%s%s' %(chaindata_dir, filename)) as file:
-                    remove_trans.append(filename)
-
+            transactions  = []   
+            transaction_dir = '../transaction/' + TRANSACTION_DIR
+            for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+                with open('%s%s' %(transaction_dir, filename)) as file:
                     transaction = json.load(file)
                     transactions.append(transaction)
+            
+            transactions=sorted(transactions, key=lambda x: x['value'],reverse=True)
+            transactions=transactions[:5]
+            for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+                with open('%s%s' %(transaction_dir, filename)) as file:
+                    transaction = json.load(file)
+                    check =transaction in transactions
+                    if check:
+                        print('** mine 5 trans' +filename)
+
+                        os.remove('../transaction/'+transaction_dir +filename)
             latest_block = self.chain[-1]
             next_index = int(latest_block.index) + 1
             next_block = Block(
@@ -246,13 +254,11 @@ class Blockchain:
                 transactions = transactions,
                 previous_hash = latest_block.hash,
                 diff = MINING_DIFFICULTY
-            )
+                    )
             next_block = next_block.mine()
             self.chain.append(next_block)
             next_block.save()
-            for filename in remove_trans:
-                os.remove('../transaction/'+conf.TRANSACTION_DIR +filename)
-
+            
     def start(self):
         chaindata_dir = CHAINDATA_DIR
         # check if chaindata folder existed, create if not
