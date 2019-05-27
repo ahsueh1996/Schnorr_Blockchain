@@ -238,14 +238,7 @@ class Blockchain:
             
             transactions=sorted(transactions, key=lambda x: x['value'],reverse=True)
             transactions=transactions[:5]
-            for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
-                with open('%s%s' %(transaction_dir, filename)) as file:
-                    transaction = json.load(file)
-                    check =transaction in transactions
-                    if check:
-                        print('** mine 5 trans' +filename)
-
-                        os.remove('../transaction/'+transaction_dir +filename)
+            
             latest_block = self.chain[-1]
             next_index = int(latest_block.index) + 1
             next_block = Block(
@@ -258,6 +251,14 @@ class Blockchain:
             next_block = next_block.mine()
             self.chain.append(next_block)
             next_block.save()
+            for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+                with open('%s%s' %(transaction_dir, filename)) as file:
+                    transaction = json.load(file)
+                    check =transaction in transactions
+                    if check:
+                        print('** mine 5 trans' +filename)
+
+                        os.remove('../transaction/'+transaction_dir +filename)
             
     def start(self):
         chaindata_dir = CHAINDATA_DIR
