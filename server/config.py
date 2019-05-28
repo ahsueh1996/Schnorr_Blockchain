@@ -1,7 +1,7 @@
 
 MINING_SENDER = "THE BLOCKCHAIN"
 MINING_REWARD = 1
-MINING_DIFFICULTY = 6
+MINING_DIFFICULTY = 5
 CHAINDATA_DIR = 'chaindata/'
 BROADCASTED_BLOCK_DIR = CHAINDATA_DIR + 'broadcasted_blocks'
 BLOCK_VAR_CONVERSIONS = {'index', 'timestamp',
@@ -19,6 +19,7 @@ TRANSACTION_DIR = 'transaction_wait/'
 TRANSACTION_VAR_CONVERSIONS = {'sender_address', 'recipient_address',
                          'value', 'timestamp'}                         
 PEERS = [
-    'http://localhost:5000/',
     'http://localhost:5001/',
 ]
+
+STANDARD_ROUNDS = 100000

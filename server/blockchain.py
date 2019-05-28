@@ -41,12 +41,12 @@ import sys
 
 from config import *
 from block import Block
-
+from broadcaster import broadcaster
 
 class Blockchain:
 
     def __init__(self):
-
+        self.mining_paused = False
         self.transactions = []
         self.chain = []
         self.nodes = set()
@@ -69,149 +69,6 @@ class Blockchain:
         else:
             raise ValueError('Invalid URL')
 
-    def verify_transaction_signature(self, sender_address, signature, transaction):
-        """
-        Check that the provided signature corresponds to transaction
-        signed by the public key (sender_address)
-        """
-        public_key = RSA.importKey(binascii.unhexlify(sender_address))
-        verifier = PKCS1_v1_5.new(public_key)
-        h = SHA.new(str(transaction).encode('utf8'))
-        return verifier.verify(h, binascii.unhexlify(signature))
-
-    def submit_transaction(self, sender_address, recipient_address, value, signature):
-        """
-        Add a transaction to transactions array if the signature verified
-        """
-        transaction = OrderedDict({'sender_address': sender_address,
-                                   'recipient_address': recipient_address,
-                                   'value': value})
-
-        # Reward for mining a block
-        if sender_address == MINING_SENDER:
-            self.transactions.append(transaction)
-            return len(self.chain) + 1
-        # Manages transactions from wallet to another wallet
-        else:
-            transaction_verification = self.verify_transaction_signature(
-                sender_address, signature, transaction)
-            if transaction_verification:
-                self.transactions.append(transaction)
-                return len(self.chain) + 1
-            else:
-                return False
-
-    def create_block(self, nonce, previous_hash):
-        """
-        Add a block of transactions to the blockchain
-        """
-        block = {'block_number': len(self.chain) + 1,
-                 'timestamp': time(),
-                 'transactions': self.transactions,
-                 'nonce': nonce,
-                 'previous_hash': previous_hash}
-
-        # Reset the current list of transactions
-        self.transactions = []
-
-        self.chain.append(block)
-        return block
-
-    def hash(self, block):
-        """
-        Create a SHA-256 hash of a block
-        """
-        # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
-        block_string = json.dumps(block, sort_keys=True).encode()
-
-        return hashlib.sha256(block_string).hexdigest()
-
-    def proof_of_work(self):
-        """
-        Proof of work algorithm
-        """
-        last_block = self.chain[-1]
-        last_hash = self.hash(last_block)
-
-        nonce = 0
-        while self.valid_proof(self.transactions, last_hash, nonce) is False:
-            nonce += 1
-
-        return nonce
-
-    def valid_proof(self, transactions, last_hash, nonce, difficulty=MINING_DIFFICULTY):
-        """
-        Check if a hash value satisfies the mining conditions. This function is used within the proof_of_work function.
-        """
-        guess = (str(transactions)+str(last_hash)+str(nonce)).encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:difficulty] == '0'*difficulty
-
-    def valid_chain(self, chain):
-        """
-        check if a bockchain is valid
-        """
-        last_block = chain[0]
-        current_index = 1
-
-        while current_index < len(chain):
-            block = chain[current_index]
-            # print(last_block)
-            # print(block)
-            # print("\n-----------\n")
-            # Check that the hash of the block is correct
-            if block['previous_hash'] != self.hash(last_block):
-                return False
-
-            # Check that the Proof of Work is correct
-            # Delete the reward transaction
-            transactions = block['transactions'][:-1]
-            # Need to make sure that the dictionary is ordered. Otherwise we'll get a different hash
-            transaction_elements = [
-                'sender_address', 'recipient_address', 'value']
-            transactions = [OrderedDict(
-                (k, transaction[k]) for k in transaction_elements) for transaction in transactions]
-
-            if not self.valid_proof(transactions, block['previous_hash'], block['nonce'], MINING_DIFFICULTY):
-                return False
-
-            last_block = block
-            current_index += 1
-
-        return True
-
-    def resolve_conflicts(self):
-        """
-        Resolve conflicts between blockchain's nodes
-        by replacing our chain with the longest one in the network.
-        """
-        neighbours = self.nodes
-        new_chain = None
-
-        # We're only looking for chains longer than ours
-        max_length = len(self.chain)
-
-        # Grab and verify the chains from all the nodes in our network
-        for node in neighbours:
-            print('http://' + node + '/chain')
-            response = requests.get('http://' + node + '/chain')
-
-            if response.status_code == 200:
-                length = response.json()['length']
-                chain = response.json()['chain']
-
-                # Check if the length is longer and the chain is valid
-                if length > max_length and self.valid_chain(chain):
-                    max_length = length
-                    new_chain = chain
-
-        # Replace our chain if we discovered a new, valid chain longer than ours
-        if new_chain:
-            self.chain = new_chain
-            return True
-
-        return False
-
     def create_genesis_block(self):
         genesis_block = Block(
             index = '0',
@@ -228,7 +85,8 @@ class Blockchain:
         if self.chain == []:
             self.restore_chain()
         
-        while True:
+        while not self.mining_paused:
+            # Put transaction from waiting list into block
             transactions  = []   
             transaction_dir = '../transaction/' + TRANSACTION_DIR
             for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
@@ -239,6 +97,7 @@ class Blockchain:
             transactions=sorted(transactions, key=lambda x: x['value'],reverse=True)
             transactions=transactions[:5]
             
+            # Mining block
             latest_block = self.chain[-1]
             next_index = int(latest_block.index) + 1
             next_block = Block(
@@ -251,6 +110,9 @@ class Blockchain:
             next_block = next_block.mine()
             self.chain.append(next_block)
             next_block.save()
+            broadcaster.broadcast_new_block(next_block)
+            
+            # Remove minned transactions out of waiting list
             for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
                 with open('%s%s' %(transaction_dir, filename)) as file:
                     transaction = json.load(file)
@@ -274,6 +136,8 @@ class Blockchain:
         self.mining()
 
     def restore_chain(self):
+        if len(self.chain):
+            return False
         chaindata_dir = CHAINDATA_DIR
         total_block = 0
         previous_block = None
@@ -311,6 +175,7 @@ class Blockchain:
                 total_block += 1
         print(' - Restore chain successfully!')
         print(' - Total block: %s' %(total_block))
+        return True
         
     def save(self):
         for block in self.chain:
@@ -340,7 +205,7 @@ class Blockchain:
         previous_block = None
         for i, block in enumerate(self.chain):
             if not block.is_valid():
-                print(' - Error: block #%s is invalid' % (block['index']))
+                print(' - Error: block #%s is invalid' % (block.index))
                 return False
             
             if i == 0:
@@ -350,13 +215,18 @@ class Blockchain:
                 print(' - Error: block #%s and block #%s is not linked' %
                       (block.index, previous_block.index))
                 print(' - Error: block #%s is invalid' %
-                      (block['index']))
+                      (block.index))
                 return False
             
             if i != 0:
                 previous_block = block
         return True
 
+    def most_recent_block(self):
+        if len(self.chain) > 0:
+            return self.chain[-1]
+        return None
+    
     def __len__(self):
         return len(self.chain)
 

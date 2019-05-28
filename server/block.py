@@ -3,6 +3,7 @@ import datetime as date
 # import config as conf
 import json
 import sys
+import os
 from config import *
 
 
@@ -32,31 +33,31 @@ class Block:
         self.nonce = hash_and_nonce['nonce']
         return self
 
-    def hash_block(self, nonce):
+    def hash_block(self):
         sha = hasher.sha256()
         data = (str(self.index) + str(self.timestamp) + str(self.transactions) +
-                str(self.previous_hash) + str(self.diff) + str(nonce)).encode('utf-8')
+                str(self.previous_hash) + str(self.diff) + str(self.nonce)).encode('utf-8')
         sha.update(data)
-        return sha.hexdigest()
+        self.hash = sha.hexdigest()
+        return self.hash
 
     def proof_of_work(self):
 
         print(" - Start mining")
-        nonce = 0
         diff = MINING_DIFFICULTY
         true_hash = ''
 
         while True:
-            guess_hash = self.hash_block(nonce)
+            guess_hash = self.hash_block()
             # print(" - Mining: %s" % guess_hash)
             if guess_hash[:diff] == '0'*diff:
                 true_hash = guess_hash
                 print(" - Mine successfully")
                 print(" - Mined hash: %s" % true_hash)
                 break
-            nonce += 1
+            self.nonce += 1
 
-        return {'hash': true_hash, 'nonce': nonce}
+        return {'hash': true_hash, 'nonce': self.nonce}
 
     def save(self):
         index_string = str(self.index).zfill(6)
@@ -79,10 +80,12 @@ class Block:
 
         return block_data
 
+    def to_json(self):
+        return json.dumps(self.to_dict())
+        
     def is_valid(self):
         block_hash = self.hash
-        block_nonce = self.nonce
-        guess_hash = self.hash_block(block_nonce)
+        guess_hash = self.hash_block()
         return guess_hash == block_hash
     
     def __eq__(self, other):
