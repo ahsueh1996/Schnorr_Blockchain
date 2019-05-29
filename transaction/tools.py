@@ -22,7 +22,8 @@ def RIPEMD160(string):
 def SHA256(string):
 	string = binascii.a2b_hex(string)
 	return hashlib.sha256(string).hexdigest()
-
+def sha256(string):
+	return hashlib.sha256(string).hexdigest()
 def create_address(string):
 	
 	sha256		= SHA256(string)
@@ -89,7 +90,16 @@ def hashStr(bytebuffer):
 
 
 
+def dict_to_binary(the_dict):
+    str = json.dumps(the_dict)
+    binary = ' '.join(format(ord(letter), 'b') for letter in str)
+    return binary
 
+
+def binary_to_dict(the_binary):
+    jsn = ''.join(chr(int(x, 2)) for x in the_binary.split())
+    d = json.loads(jsn)  
+    return d
 #wallet
 def get_wallet_from_address(address):
     with open(conf.WALLET_DIR + address+'.json') as file:

@@ -14,7 +14,7 @@ from Crypto.Signature import PKCS1_v1_5
 import requests
 import config as conf
 from tools import *
-
+import json
 app = Flask(__name__)
 
 # Instantiate the Blockchain
@@ -29,9 +29,9 @@ def index():
 	return render_template('./index.html')
 
 @app.route('/hash')
-def gettransactionID(rawhax):
-	response=transaction.gettransactionID('01000000017967a5185e907a25225574544c31f7b059c1a191d65b53dcc1554d339c4f9efc010000006a47304402206a2eb16b7b92051d0fa38c133e67684ed064effada1d7f925c842da401d4f22702201f196b10e6e4b4a9fff948e5c5d71ec5da53e90529c8dbd122bff2b1d21dc8a90121039b7bcd0824b9a9164f7ba098408e63e5b7e3cf90835cceb19868f54f8961a825ffffffff014baf2100000000001976a914db4d1141d0048b1ed15839d0b7a4c488cd368b0e88ac00000000')
-	return jsonify(response), 201
+def gettransactionID():
+	response=transaction.gettransactionID('0100000001c997a5e56e104102fa209c6a852dd90660a20b2d9c352423edce25857fcd3704000000004847304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d0901ffffffff0200ca9a3b00000000434104ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84cac00286bee0000000043410411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3ac00000000')
+	return response
 
 
 
@@ -137,4 +137,53 @@ def generate_transaction():
 	except:
 		return "Not address or private key" ,500
 	
-		
+@app.route('/transactions/get', methods=['GET'])
+def get_transactions():
+    #Get transactions from transactions pool
+    chaindata_dir = conf.TRANSACTION_DIR
+    transactions  = []   
+    array={}
+    for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+        with open('%s%s' %(chaindata_dir, filename)) as file:
+            transaction = json.load(file)
+            
+            array[filename]=transaction
+            
+
+    response =transactions
+    return jsonify(array), 200	
+	
+
+@app.route('/sync/transaction', methods=['GET'])
+def sync_transaction():
+	# check file mình có 
+    transaction_dir =conf.TRANSACTION_DIR
+    arr={}
+    for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+        with open('%s%s' %(transaction_dir, filename)) as file:
+            transaction = json.load(file)
+            arr[filename] =transaction
+    
+    
+    # check file node khác
+    for node in conf.PEERS:
+        url     =   node + "transactions/get"
+        res     =   requests.get(url)
+        data    =   res.json()
+        for dict_key,dict_val in data.items():
+            
+            check = True
+            for mykey,myval in arr.items():
+                if(dict_key != mykey and dict_val != myval):
+                    check =False
+                
+            if(check== False):
+                filename =transaction_dir + dict_key
+                file = open(filename, 'w')
+                file.write(json.dumps(dict_val, indent=4))
+                file.close()
+                print('sync success')
+
+    
+    
+
