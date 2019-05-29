@@ -72,6 +72,24 @@ def mine_for_block_listener(event):
         print(" * Mined a new block, block hash %s" %(new_block.hash))
         blockchain.add_block(new_block)
         new_block.save()
+        print("ăăăăăăăăăă")
+        new_block_dict = new_block.to_dict()
+        transactions = new_block_dict['transactions']
+        # Remove minned transactions out of waiting list
+        transaction_dir ='../transaction/'+ TRANSACTION_DIR
+        for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+            with open('%s%s' %(transaction_dir, filename)) as file:
+                transaction = json.load(file)
+                check =transaction in transactions
+                if check:
+                    print('** mine 5 trans' +filename)
+
+                    os.remove('../transaction/'+TRANSACTION_DIR +filename)
+        
+
+
+
+
         broadcaster.broadcast_new_block(new_block)
         sched.add_job(mine_from_prev_block, args=[new_block], kwargs={
                       'rounds': STANDARD_ROUNDS, 'start_nonce': 0}, id='mining')  # add the block again
