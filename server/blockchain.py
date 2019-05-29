@@ -77,6 +77,7 @@ class Blockchain:
             previous_hash = '',
             diff = MINING_DIFFICULTY)
         genesis_block = genesis_block.mine()
+        genesis_block.save()
         self.chain.append(genesis_block)
         return genesis_block
 
@@ -136,11 +137,10 @@ class Blockchain:
         self.mining()
 
     def restore_chain(self):
-        if len(self.chain):
-            return False
         chaindata_dir = CHAINDATA_DIR
         total_block = 0
         previous_block = None
+        temp_chain = []
         for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
             with open('%s%s' %(CHAINDATA_DIR, filename)) as file:
                 block_data = json.load(file)
@@ -171,11 +171,14 @@ class Blockchain:
                 if i != 0:
                     previous_block = current_block
                 
-                self.chain.append(current_block)
+                temp_chain.append(current_block)
                 total_block += 1
-        print(' - Restore chain successfully!')
-        print(' - Total block: %s' %(total_block))
-        return True
+        if len(self.chain) < len(temp_chain):
+            self.chain = temp_chain
+            print(' - Restore chain successfully!')
+            print(' - Total block: %s' %(total_block))
+            return True
+        return False
         
     def save(self):
         for block in self.chain:
@@ -225,7 +228,7 @@ class Blockchain:
     def most_recent_block(self):
         if len(self.chain) > 0:
             return self.chain[-1]
-        return None
+        return self.create_genesis_block()
     
     def __len__(self):
         return len(self.chain)
