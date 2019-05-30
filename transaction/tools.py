@@ -11,8 +11,14 @@ import json
 import glob
 import os
 b58_digits = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+from collections import OrderedDict
 
-
+def to_dict(json):
+	return OrderedDict({'sender_address': json['sender_address'],
+                            'recipient_address': json['recipient_address'],
+                            'value': json['value'],
+							'timestamp':json['timestamp']
+							})
 def RIPEMD160(string):
 	string = binascii.a2b_hex(string)
 	h = hashlib.new('ripemd160')

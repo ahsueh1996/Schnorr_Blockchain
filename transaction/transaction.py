@@ -161,26 +161,48 @@ class Transaction:
                 transaction_verification = self.verify_transaction_signature(sender_address, signature, transaction_verification)
 
                 if transaction_verification:
-                    path =conf.TRANSACTION_DIR
-                    file_list = os.listdir(path)
-                    list_of_files=sorted(file_list) 
-                    if(list_of_files):
-                        latest_file = list_of_files[-1]
-                        latest_file =latest_file.replace('.json', '')
-                        latest_file = int(latest_file) +1
-                    else:
-                        latest_file = 1
-                    filename = "{}{}.json".format(conf.TRANSACTION_DIR,latest_file ) 
+                    # path = conf.TRANSACTION_DIR
+                    # file_list = os.listdir(path)
+                    # list_of_files=sorted(file_list) 
+                    # if(list_of_files):
+                    #     latest_file = list_of_files[-1]
+                    #     latest_file =latest_file.replace('.json', '')
+                    #     latest_file = int(latest_file) +1
+                    # else:
+                    #     latest_file = 1
+                    data = transaction
+                    hash_data = dict_to_binary(data)
+                    file_name=sha256(hash_data.encode('utf-8'))
+
+                    filename = "{}{}.json".format(conf.TRANSACTION_DIR,file_name ) 
 
                     print(" - New wallet saved to %s" % (filename))
-                    data = transaction
+                    
                     file = open(filename, 'w')
                     file.write(json.dumps(data, indent=4))
                     file.close()
 
-                    
+                    self.broadcast_transaction()
                     return len(self.chain) + 1
                 else:
                     return False
 
 
+    def broadcast_transaction(self):
+        chaindata_dir = conf.TRANSACTION_DIR
+    
+            
+        # check file node khác
+        for node in conf.PEERS:
+            url     =   node + "broadcast/save/transaction"
+            print('connect host ' +node)
+            try:
+
+                for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+                    with open('%s%s' %(chaindata_dir, filename)) as file:
+                        transaction = json.load(file)
+                        res     =   requests.post(url,json=transaction)
+            except ConnectionError:
+                print("connect false " +url)
+                continue
+            print('connect to '+url )

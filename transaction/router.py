@@ -15,6 +15,7 @@ import requests
 import config as conf
 from tools import *
 import json
+from requests.exceptions import ConnectionError
 app = Flask(__name__)
 
 # Instantiate the Blockchain
@@ -47,8 +48,7 @@ def new_transaction():
     # Create a new Transaction
     
     transaction_result = transaction.submit_transaction(values['sender_address'], values['recipient_address'], values['amount'], values['signature'])
-    return jsonify(transaction_result)
-
+      
     if transaction_result == False:
         response = {'message': 'Invalid Transaction!'}
         return jsonify(response), 406
@@ -168,11 +168,19 @@ def sync_transaction():
     # check file node khác
     for node in conf.PEERS:
         url     =   node + "transactions/get"
-        res     =   requests.get(url)
+        try:
+            res     =   requests.get(url)
+        except ConnectionError:
+            print("connect false " +url)
+            continue
+        print('connect to '+url )
+        
         data    =   res.json()
         for dict_key,dict_val in data.items():
             
             check = True
+            if(len(arr)==0):
+                check =False
             for mykey,myval in arr.items():
                 if(dict_key != mykey and dict_val != myval):
                     check =False
@@ -184,6 +192,54 @@ def sync_transaction():
                 file.close()
                 print('sync success')
 
-    
-    
 
+
+@app.route('/broadcast/transaction', methods=['GET'])
+def broadcast_transaction():
+    chaindata_dir = conf.TRANSACTION_DIR
+   
+            
+
+    # check file node khác
+    for node in conf.PEERS:
+        url     =   node + "broadcast/save/transaction"
+        print('connect host ' +node)
+        try:
+
+            for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+                with open('%s%s' %(chaindata_dir, filename)) as file:
+                    transaction = json.load(file)
+                    res     =   requests.post(url,json=transaction)
+        except ConnectionError:
+            print("connect false " +url)
+            continue
+        print('connect to '+url )
+        
+
+@app.route('/broadcast/save/transaction', methods=['POST'])
+def broadcast_save_transaction():
+    
+    data=request.json
+    data= to_dict(data)
+    hash_data = dict_to_binary(data)
+    file_name=sha256(hash_data.encode('utf-8'))
+
+
+
+    transaction_dir =conf.TRANSACTION_DIR
+    arr={}
+    if len(os.listdir(transaction_dir) ) == 0:
+        filename = transaction_dir + file_name
+        file = open(filename, 'w')
+        file.write(json.dumps(data, indent=4))
+        file.close()
+    else:    
+        for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+            with open('%s%s' %(transaction_dir, filename)) as file:
+                transaction = json.load(file)
+                if(file_name != filename):
+                    print('broadcash success')
+                    filename =transaction_dir + file_name
+                    file = open(filename, 'w')
+                    file.write(json.dumps(data, indent=4))
+                    file.close()
