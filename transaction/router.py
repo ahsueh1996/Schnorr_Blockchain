@@ -102,6 +102,7 @@ def new_wallet():
 
 	wallet = Wallet(array)
 	wallet.save_wallet()
+	wallet.broadcast_wallet()
 
 
 	return jsonify(response), 200
@@ -194,6 +195,34 @@ def sync_transaction():
 
 
 
+@app.route('/broadcast/save/wallet', methods=['POST'])
+def broadcast_save_wallet():
+    data=request.json
+    index_string = data['address']
+
+    filename = "{}{}.json".format(conf.WALLET_DIR,index_string) 
+
+    print(" - New wallet saved to %s" % (filename))
+
+    data= OrderedDict({'private_key': data['private_key'],
+                            'public_key': data['public_key'],
+                            'address': data['address'],
+                            'timestamp':data['timestamp']
+                            
+                            })
+    file = open(filename, 'w')
+    file.write(json.dumps(data, indent=4))
+    file.close()
+    print('**broadcash wallet '+index_string)
+
+
+        
+
+
+
+
+
+
 @app.route('/broadcast/transaction', methods=['GET'])
 def broadcast_transaction():
     chaindata_dir = conf.TRANSACTION_DIR
@@ -214,7 +243,6 @@ def broadcast_transaction():
             print("connect false " +url)
             continue
         print('connect to '+url )
-        
 
 @app.route('/broadcast/save/transaction', methods=['POST'])
 def broadcast_save_transaction():

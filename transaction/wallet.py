@@ -60,6 +60,31 @@ class Wallet:
         file = open(filename, 'w')
         file.write(json.dumps(data, indent=4))
         file.close()
+
+
+
+
+        # broadcast_wallet
+    def broadcast_wallet(self):
+        chaindata_dir = conf.TRANSACTION_DIR  
+        data = self.to_dict()
+        # check file node khác
+        for node in conf.PEERS:
+            url     =   node + "broadcast/save/wallet"
+            try:
+                print('broadcast_wallet host ' +node)
+
+                res     =   requests.post(url,json=data)
+            
+            except requests.ConnectionError:
+                print("connect false " +url)
+                continue
+
+
+                
+            
+
+
     def ischeck_address(self):
         exists = os.path.isfile(conf.WALLET_DIR + self.address+'.json')
         if exists:
