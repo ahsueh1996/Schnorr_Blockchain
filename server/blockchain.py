@@ -183,6 +183,7 @@ class Blockchain:
     def save(self):
         for block in self.chain:
             block.save()
+            block.delete_transaction()
         return True
     
     def find_block_by_index(self, index):

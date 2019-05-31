@@ -67,7 +67,19 @@ class Block:
         file = open(filename, 'w')
         file.write(json.dumps(data, indent=4))
         file.close()
+    def delete_transaction(self):
+        # Remove minned transactions out of waiting list
+        transaction_dir ='../transaction/'+ TRANSACTION_DIR
+        data = self.to_dict()
+        transactions =data['transactions']
+        for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+            with open('%s%s' %(transaction_dir, filename)) as file:
+                transaction = json.load(file)
+                check =transaction in transactions
+                if check:
+                    print('** remove trans in block validate_possible_block' +filename)
 
+                    os.remove('../transaction/'+TRANSACTION_DIR +filename)
     def to_dict(self):
         block_data = {}
         block_data['index'] = str(self.index)

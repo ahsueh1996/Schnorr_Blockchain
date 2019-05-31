@@ -75,6 +75,7 @@ def mine_for_block_listener(event):
         print("ăăăăăăăăăă")
         new_block_dict = new_block.to_dict()
         transactions = new_block_dict['transactions']
+        
         # Remove minned transactions out of waiting list
         transaction_dir ='../transaction/'+ TRANSACTION_DIR
         for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
@@ -83,7 +84,7 @@ def mine_for_block_listener(event):
                 check =transaction in transactions
                 if check:
                     print('** mine 5 trans' +filename)
-
+    
                     os.remove('../transaction/'+TRANSACTION_DIR +filename)
         
 
@@ -121,6 +122,8 @@ def validate_possible_block(possible_block_dict):
     
     blockchain.add_block(possible_block)
     possible_block.save()
+    # delete trans wait  broadcast
+    possible_block.delete_transaction()
     print(' * Accept new block at index %s with hash %s' %
             (possible_block.index, possible_block.hash))
 
