@@ -72,7 +72,6 @@ def mine_for_block_listener(event):
         print(" * Mined a new block, block hash %s" %(new_block.hash))
         blockchain.add_block(new_block)
         new_block.save()
-        print("ăăăăăăăăăă")
         new_block_dict = new_block.to_dict()
         transactions = new_block_dict['transactions']
         
