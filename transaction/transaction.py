@@ -33,9 +33,13 @@ import config as conf
 import hashlib
 import binascii
 import struct
-from tools import *
 import json
-from wallet import Wallet
+
+import sys
+sys.path.append('../')
+from transaction.tools import *
+from transaction.wallet import Wallet
+from requests.exceptions import ConnectionError
 
 class Transaction:
 
@@ -174,7 +178,7 @@ class Transaction:
                     hash_data = dict_to_binary(data)
                     file_name=sha256(hash_data.encode('utf-8'))
 
-                    filename = "{}{}.json".format(conf.TRANSACTION_DIR,file_name ) 
+                    filename = "{}{}.json".format('../transaction/'+conf.TRANSACTION_DIR,file_name ) 
 
                     print(" - New wallet saved to %s" % (filename))
                     
@@ -189,7 +193,7 @@ class Transaction:
 
 
     def broadcast_transaction(self):
-        chaindata_dir = conf.TRANSACTION_DIR
+        chaindata_dir = '../transaction/'+conf.TRANSACTION_DIR
     
             
         # check file node khác

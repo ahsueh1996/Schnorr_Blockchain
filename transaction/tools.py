@@ -108,7 +108,7 @@ def binary_to_dict(the_binary):
     return d
 #wallet
 def get_wallet_from_address(address):
-    with open(conf.WALLET_DIR + address+'.json') as file:
+    with open('../transaction/'+conf.WALLET_DIR + address+'.json') as file:
         wallet = json.load(file)
         return wallet
         file.close()

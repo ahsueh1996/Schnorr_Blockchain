@@ -33,7 +33,9 @@ import config as conf
 import hashlib
 import binascii
 import struct
-from tools import *
+import sys
+sys.path.append('../')
+from transaction.tools import *
 import json
 import os
 class Wallet:
@@ -53,7 +55,7 @@ class Wallet:
     def save_wallet(self):
         index_string = self.address
 
-        filename = "{}{}.json".format(conf.WALLET_DIR,self.address) 
+        filename = "{}{}.json".format('../transaction/'+conf.WALLET_DIR,self.address) 
 
         print(" - New wallet saved to %s" % (filename))
         data = self.to_dict()
@@ -86,11 +88,10 @@ class Wallet:
 
 
     def ischeck_address(self):
-        exists = os.path.isfile(conf.WALLET_DIR + self.address+'.json')
+        exists = os.path.isfile('../transaction/'+conf.WALLET_DIR + self.address+'.json')
         if exists:
             return True
             # Store configuration file values
         else:
             # Keep presets
             return False
-
