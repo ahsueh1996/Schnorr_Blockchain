@@ -7,6 +7,9 @@ import json
 import requests
 import glob
 import sys
+import sys
+sys.path.append('../')
+from transaction.transaction import Transaction
 
 class Sync():
     def sync_local(self):
@@ -38,6 +41,20 @@ class Sync():
                 peer_blockchain = Blockchain()
                 peer_blockchain.chain = peer_blocks
                 
+
+
+
+                #sync transaction 
+                Transaction.sync_transaction() 
+                #sync wallet
+                Transaction.sync_wallet() 
+                
+
+
+
+
+
+
                 if peer_blockchain.is_valid_chain() and len(peer_blockchain.chain) > len(best_chain.chain):
                     best_chain = peer_blockchain
                     best_chain_is_local_chain = False

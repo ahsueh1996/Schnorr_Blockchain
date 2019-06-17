@@ -280,7 +280,19 @@ def get_transactions():
     response =transactions
     return jsonify(array), 200	
 	
+@app.route('/wallet/get', methods=['GET'])
+def get_wallet():
+    #Get transactions from transactions pool
+    chaindata_dir = '../transaction/'+conf.WALLET_DIR
+    array={}
+    for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
+        with open('%s%s' %(chaindata_dir, filename)) as file:
+            wallet = json.load(file)
+            
+            array[filename]=wallet
+            
 
+    return jsonify(array), 200	
 @app.route('/sync/transaction', methods=['GET'])
 def sync_transaction():
 	# check file mình có 

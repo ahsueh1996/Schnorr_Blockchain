@@ -210,3 +210,78 @@ class Transaction:
                 print("connect false " +url)
                 continue
             print('connect to '+url )
+
+
+    def sync_transaction():
+	# check file mình có 
+        transaction_dir ='../transaction/'+conf.TRANSACTION_DIR
+        arr={}
+        for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
+            with open('%s%s' %(transaction_dir, filename)) as file:
+                transaction = json.load(file)
+                arr[filename] =transaction
+        
+        
+        # check file node khác
+        for node in conf.PEERS:
+            url     =   node + "transactions/get"
+            try:
+                res     =   requests.get(url)
+            except ConnectionError:
+                print("connect false " +url)
+                continue
+            print('connect to '+url )
+            
+            data    =   res.json()
+            for dict_key,dict_val in data.items():
+                
+                check = True
+                if(len(arr)==0):
+                    check =False
+                for mykey,myval in arr.items():
+                    if(dict_key != mykey and dict_val != myval):
+                        check =False
+                    
+                if(check== False):
+                    filename =transaction_dir + dict_key
+                    file = open(filename, 'w')
+                    file.write(json.dumps(dict_val, indent=4))
+                    file.close()
+                    print('sync transaction success')
+    def sync_wallet():
+	# check file mình có 
+        wallet_dir ='../transaction/'+conf.WALLET_DIR
+        arr={}
+        for i, filename in enumerate(sorted(os.listdir(wallet_dir))):
+            with open('%s%s' %(wallet_dir, filename)) as file:
+                transaction = json.load(file)
+                arr[filename] =transaction
+        
+        
+        # check file node khác
+        for node in conf.PEERS:
+            url     =   node + "wallet/get"
+            try:
+                res     =   requests.get(url)
+            except ConnectionError:
+                print("connect false " +url)
+                continue
+            print('connect to '+url )
+            
+            data    =   res.json()
+            for dict_key,dict_val in data.items():
+                
+                check = True
+                if(len(arr)==0):
+                    check =False
+                for mykey,myval in arr.items():
+                    if(dict_key != mykey and dict_val != myval):
+                        check =False
+                    
+                if(check== False):
+                    filename =wallet_dir + dict_key
+                    file = open(filename, 'w')
+                    file.write(json.dumps(dict_val, indent=4))
+                    file.close()
+                    print('sync wallet success')
+    
