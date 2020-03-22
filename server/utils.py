@@ -8,7 +8,7 @@ def create_new_block_from_previous(previous_block=None):
     next_block = None
     if previous_block:  
         transactions = []
-        transaction_dir = '../transaction/' + TRANSACTION_DIR
+        transaction_dir = os.path.join('transaction',TRANSACTION_DIR)
         for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
             with open('%s%s' % (transaction_dir, filename)) as file:
                 transaction = json.load(file)

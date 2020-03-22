@@ -53,7 +53,7 @@ class Blockchain:
         # Generate random number to be used as node_id
         self.node_id = str(uuid4()).replace('-', '')
         # Create genesis block
-        # self.create_block(0, '00')
+        self.start()
 
     def register_node(self, node_url):
         """

@@ -1,0 +1,15 @@
+import os
+
+ROOT_DIR = os.getcwd()
+
+KEYGEN_ALGO = 'RSA'
+
+IGNORE = 0
+QUIET = 1
+WARN = 2
+VERBOSE = 3
+LOG_LEVEL = 3 
+
+
+MINING_REWARD = 1
+MINING_DIFFICULTY = 5

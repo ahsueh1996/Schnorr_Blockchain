@@ -7,8 +7,7 @@ import json
 import requests
 import glob
 import sys
-import sys
-sys.path.append('../')
+sys.path.append(os.path.join(os.getcwd()))
 from transaction.transaction import Transaction
 
 class Sync():
