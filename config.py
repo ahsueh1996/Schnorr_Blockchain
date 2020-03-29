@@ -3,6 +3,7 @@ import os
 ROOT_DIR = os.getcwd()
 
 KEYGEN_ALGO = 'RSA'
+DIGITAL_SIGNATURE_ALGO = 'ECDSA'
 
 IGNORE = 0
 QUIET = 1

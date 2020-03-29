@@ -21,13 +21,25 @@ class Block:
         self.height = height
         self.is_mined = False
         self.block_hash = None
-
+        
+    @classmethod
+    def from_mined_block_dict(cls, d):
+        new_block =  cls(d[previous_block_hash],
+                         d[transactions],
+                         d[height],
+                         start_nounce = d[nounce],
+                         mining_difficulty = sd[mining_difficulty])
+        cls.is_mined = True
+        cls.block_hash = d[block_hash]
+        return cls    
 
     def block_content_to_dict(self):
         d =  {'timestamp': self.previous_block_hash,
               'nounce': self.nonce,
               'transactions': self.transactions,
-              'previous_block_hash': self.previous_block_hash}
+              'previous_block_hash': self.previous_block_hash
+              'height': self.height
+              'mining_difficulty': self.mining_difficulty}
         return d
     
     def export_block_to_dict(self):
@@ -45,19 +57,9 @@ class Block:
                 break
             self.nonce += 1
         self.block_hash = guess_hash
-
-    def delete_block_transaction_from_pool(self, transactions_pool):
-        # Remove mined transactions out of waiting list
-        remaining = len(transactions_pool)-1
-        curr = 0
-        transactions_in_block = [transaction['hash_id'] for transaction in self.transactions]
-        while curr <= remaining:
-            if transactions_pool[curr].hash_id in transactions_in_block:
-                del(transactions_pool[curr])
-                remaining -= 1
-            else: 
-                curr += 1
-        return transactions_pool
+        
+    def broadcast_block(self,peers):
+        utils.broadcast(self.export_block_to_dict(), peers=peers, route="/peer_gossiped_new_block")        
         
     def is_valid(self):
         true_hash = self.hash_block

@@ -19,9 +19,19 @@ class Transaction:
         self.recipient_address = recipient_address
         self.value = value
         self.timestamp = datetime.timestamp()
-        self.hash_id =None
         self.hash_id = data_hash(dict_to_utf8(self.msg_transaction_to_dict))
         self.signature = self.sign_transaction()
+        
+    @classmethod
+    def from_transaction_dict(cls,d):
+        new_trans =  cls(d['sender_address'],
+                         'Unknown'
+                         d['recipient_address'],
+                         d['value'])
+        cls.timestamp = d[timeestamp()]
+        cls.hash_id = d['hash_id']
+        cls.signature = d['signature']
+        return cls  
 
 
     def msg_to_dict(self):
@@ -35,10 +45,11 @@ class Transaction:
         return self.msg_to_dict().update({'hash_id': self.hash_id, 'signature': self.signature})
 
     def sign_transaction(self):
-        self.signature = sign(msg_to_dict, self.sender_private_key)
+        self.signature = sign(self.msg_to_dict(), self.sender_private_key)
         
         
-    @staticmethod
-    def verify_transaction(signed_transaction):
-        return verify(signed_transaction)
-        
+    def verify_transaction(self):
+        return verify(self)
+    
+    def broadcast_transaction(self,peers):
+        utils.broadcast(self.export_transaction_to_dict(), peers=peers, route="/peer_gossiped_new_transaction")        

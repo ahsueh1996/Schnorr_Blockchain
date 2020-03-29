@@ -24,7 +24,7 @@ class Client:
 
     def __init__(self):
         self.wallets = []
-        return
+        self.load_wallets()
     
     @staticmethod
     def make_wallets(amount):
@@ -52,24 +52,6 @@ class Client:
                                   self.wallets[receiver]['private'],value)
         return transaction
     
-    def broadcast_transaction(self):
-        chaindata_dir = '../transaction/'+conf.TRANSACTION_DIR
-    
-            
-        # check file node khác
-        for node in conf.PEERS:
-            url     =   node + "broadcast/save/transaction"
-            print('connect host ' +node)
-            try:
-
-                for i, filename in enumerate(sorted(os.listdir(chaindata_dir))):
-                    with open('%s%s' %(chaindata_dir, filename)) as file:
-                        transaction = json.load(file)
-                        res     =   requests.post(url,json=transaction)
-            except ConnectionError:
-                print("connect false " +url)
-                continue
-            print('connect to '+url )
         
     
 if (__name__ == '__main__'):

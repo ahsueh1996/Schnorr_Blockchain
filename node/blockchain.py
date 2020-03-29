@@ -10,92 +10,76 @@ import config
 import utils
 from utils import log_info, log_warn, log_error, progress, ListDict
 from security.hash import data_hash, dict_to_utf8
+from client import Client
 
+BLOCK_LIMIT = config.BLOCK_LIMIT
+NOUNCE_DISTANCE = config.NOUNCE_DISTANCE
 
 class Blockchain:
 
-    def __init__(self):
+    def __init__(self,chain_id=0, peers=[]):
         self.mining_paused = False
-        self.transactions_pool = []
+        self.transactions_pool = ListDict()
         self.chain = ListDict()
         # Create genesis block
         self.create_genesis_block()
         self.mine()
+        self.chain_id = chain_id
+        self.client = Client()
+        self.peers = peers
 
     def create_genesis_block(self):
         genesis_block = Block(
             previous_block_hash=0,
-            transactions=self.transactions,
-            height=1)
+            transactions=[],
+            height=1
+            mining_difficulty=1
+            start_nounce=self.chain_id*NOUNCE_DISTANCE)
         genesis_block.mine()
-        self.chain[genesis_block.block_hash] = genesis_block
+        self.add_block(genesis_block)
         return
 
-    def mine(self):
-        # Restore chain if empty
-        if self.chain == []:
-            self.restore_chain()
+    def mint_new_block_and_mine(self):
         
-        while not self.mining_paused:
+        if not self.mining_paused:
             # Put transaction from waiting list into block
-            transactions  = []   
-            transaction_dir = '../transaction/' + TRANSACTION_DIR
-            for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
-                with open('%s%s' %(transaction_dir, filename)) as file:
-                    transaction = json.load(file)
-                    transactions.append(transaction)
+            chosen_transactions  = self.transactions_pool[0:min(BLOCK_LIMIT,len(self.transactions_pool))]   
             
-            transactions=sorted(transactions, key=lambda x: x['value'],reverse=True)
-            transactions=transactions[:5]
-            
-            # Mining block
-            latest_block = self.chain[-1]
-            next_index = int(latest_block.index) + 1
-            next_block = Block(
-                index = str(next_index),
-                timestamp = date.datetime.now(),
-                transactions = transactions,
-                previous_hash = latest_block.hash,
-                diff = MINING_DIFFICULTY
-                    )
-            next_block = next_block.mine()
-            self.chain.append(next_block)
-            next_block.save()
-            broadcaster.broadcast_new_block(next_block)
-            
-            # Remove minned transactions out of waiting list
-            for i, filename in enumerate(sorted(os.listdir(transaction_dir))):
-                with open('%s%s' %(transaction_dir, filename)) as file:
-                    transaction = json.load(file)
-                    check =transaction in transactions
-                    if check:
-                        print('** mine 5 trans' +filename)
-
-                        os.remove('../transaction/'+transaction_dir +filename)
+#           # Create the block
+            new_block = Block(previous_block_hash=self.chain[-1].block_hash,
+                              transactions=[t.export_transaction_to_dict for t in chosen_transactions],
+                              height=self.chain[-1].height+1,
+                              start_nounce=self.chain_id*NOUNCE_DISTANCE)
+            return new_block.mine()
     
-    def is_valid_chain(self):
-        previous_block = None
-        for i, block in enumerate(self.chain):
-            if not block.is_valid():
-                print(' - Error: block #%s is invalid' % (block.index))
-                return False
+    def validate_possible_transaction(self,new_transaction):
+        return new_transaction.verify_transaction()
             
-            if i == 0:
-                previous_block = block
-                
-            if i != 0 and previous_block.hash != block.previous_hash:
-                print(' - Error: block #%s and block #%s is not linked' %
-                      (block.index, previous_block.index))
-                print(' - Error: block #%s is invalid' %
-                      (block.index))
-                return False
-            
-            if i != 0:
-                previous_block = block
-        return True
+    def add_tranasction(self, new_transaction):
+        '''
+        This function should not be called on its own. We should schedule it so it does not fight the mining schedule
+        '''
+        self.transactions_pool.append(new_transaction.signature, new_transaction)
+        
+    def validate_possible_block(self, new_block):
+        if new_block.height > self.height() and new_block.is_valid():
+            return True
+        else:
+            return False
+        
+    def add_block(self, new_block):
+        '''
+        This function should not be called on its own. We should schedule it so it does not fight the mining schedule
+        '''
+        self.chain.append(new_block.block_hash, new_block)
+        for transaction in new_block.transactions:
+            self.transactions_pool.delete({transaction['hash_id']})
 
     def __len__(self):
         return len(self.chain)
+    
+    def height(self):
+        return self.chain[-1].height
 
     def __eq__(self, other):
         if len(self) != len(other):

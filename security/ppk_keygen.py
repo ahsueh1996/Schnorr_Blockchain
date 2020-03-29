@@ -19,6 +19,8 @@ def ppk_keygen():
         public_key = private_key.publickey()
         private_key = binascii.hexlify(private_key.exportKey(format='DER'))
         public_key = binascii.hexlify(public_key.exportKey(format='DER'))
+    elif KEYGEN_ALGO=='SCHNORR':
+        pass
     else: 
         log_error("Unknown keygen algo defined")
         
