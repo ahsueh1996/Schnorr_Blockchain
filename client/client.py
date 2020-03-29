@@ -14,7 +14,7 @@ import config
 import utils
 from utils import log_info, log_warn, log_error, progress
 from security.ppk_keygen import ppk_keygen
-from transaction import Transaction
+from client.transaction import Transaction
 
 #PARMETERS TO ABSTRACT OUT IN THE FUTURE
 WALLETS_DIR = os.path.join(config.ROOT_DIR, 'client', 'wallets.pkl')
@@ -47,18 +47,8 @@ class Client:
     def generate_random_transaction(self):
         sender = random.randint(0,len(self.wallets))
         receiver = random.randint(0,len(self.wallets))
-        value = random.random*1000
+        value = random.random()*1000
         transaction = Transaction(self.wallets[sender]['public'],self.wallets[sender]['private'],\
                                   self.wallets[receiver]['private'],value)
         return transaction
     
-        
-    
-if (__name__ == '__main__'):
-    
-    parser = ArgumentParser()
-    parser.add_argument('-p', '--populate', action='store_true')
-    args = parser.parse_args()
-    
-    if (args.populate):
-        Client.make_wallets(DEFAULT_NUM_WALLETS)

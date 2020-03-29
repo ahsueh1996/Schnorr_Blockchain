@@ -5,12 +5,12 @@ import datetime
 
 # Project packages
 sys.path.append('.')
-import block
 import config
 import utils
 from utils import log_info, log_warn, log_error, progress, ListDict
 from security.hash import data_hash, dict_to_utf8
-from client import Client
+from client.client import Client
+from node.block import Block
 
 BLOCK_LIMIT = config.BLOCK_LIMIT
 NOUNCE_DISTANCE = config.NOUNCE_DISTANCE
@@ -21,19 +21,17 @@ class Blockchain:
         self.mining_paused = False
         self.transactions_pool = ListDict()
         self.chain = ListDict()
-        # Create genesis block
-        self.create_genesis_block()
-        self.mine()
         self.chain_id = chain_id
         self.client = Client()
         self.peers = peers
+        self.create_genesis_block()
 
     def create_genesis_block(self):
         genesis_block = Block(
             previous_block_hash=0,
             transactions=[],
-            height=1
-            mining_difficulty=1
+            height=1,
+            mining_difficulty=1,
             start_nounce=self.chain_id*NOUNCE_DISTANCE)
         genesis_block.mine()
         self.add_block(genesis_block)

@@ -27,4 +27,4 @@ def data_hash(data):
 
 
 def dict_to_utf8 (d):
-    return str(d).encoding('utf-8')
+    return str(d).encode('utf-8')

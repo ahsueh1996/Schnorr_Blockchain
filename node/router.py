@@ -1,12 +1,15 @@
+# Native packages
+import sys
+import requests
+import apscheduler
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
-
-import apscheduler
-import requests
-import config as conf
-
 from apscheduler.schedulers.background import BackgroundScheduler
 
+# Project packages
+sys.path.append('.')
+from node.blockchain import Blockchain
+from node.node_list import Node_Registry
 from node.scheduled_routines import SCHED_validate_and_add_possible_block
 
 

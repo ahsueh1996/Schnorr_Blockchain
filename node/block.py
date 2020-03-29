@@ -1,7 +1,6 @@
 # Native packages
 import os
 import sys
-import datetime
 
 # Project packages
 sys.path.append('.')
@@ -15,9 +14,9 @@ class Block:
     def __init__(self, previous_block_hash, transactions, height, start_nounce=0, mining_difficulty=config.MINING_DIFFICULTY):
         self.previous_block_hash = previous_block_hash
         self.transactions = transactions
-        self.nonce = start_nounce
+        self.nounce = start_nounce
         self.mining_difficulty = mining_difficulty
-        self.timestamp = datetime.timestamp()
+        self.timestamp = utils.time_millis()
         self.height = height
         self.is_mined = False
         self.block_hash = None
@@ -35,18 +34,18 @@ class Block:
 
     def block_content_to_dict(self):
         d =  {'timestamp': self.previous_block_hash,
-              'nounce': self.nonce,
+              'nounce': self.nounce,
               'transactions': self.transactions,
-              'previous_block_hash': self.previous_block_hash
-              'height': self.height
+              'previous_block_hash': self.previous_block_hash,
+              'height': self.height,
               'mining_difficulty': self.mining_difficulty}
         return d
     
     def export_block_to_dict(self):
-        return self.msg_to_dict().update({'block_hash': self.block_hash})
+        return self.block_content_to_dict().update({'block_hash': self.block_hash})
 
     def hash_block(self):
-        return data_hash(dict_to_utf8(self.block_to_dict()))
+        return data_hash(dict_to_utf8(self.block_content_to_dict()))
 
     def mine(self):
         while True:
@@ -55,7 +54,7 @@ class Block:
             if guess_hash[:self.mining_difficulty] == '0'*self.mining_difficulty:
                 progress(self.nounce,self.nounce,'Block mined @ {}'.format(guess_hash))
                 break
-            self.nonce += 1
+            self.nounce += 1
         self.block_hash = guess_hash
         
     def broadcast_block(self,peers):

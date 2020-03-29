@@ -23,14 +23,16 @@ def sign(msg, sender_private_key):
     h = data_hash(dict_to_utf8(msg))
     
     if DIGITAL_SIGNATURE_ALGO == 'ECDSA':
+        log_info('Hex pk: {}'.format(sender_private_key))
         private_key = RSA.importKey(binascii.unhexlify(sender_private_key))
+        log_info('unhexed : {}'.format(private_key))
         signer = PKCS1_v1_5.new(private_key)
         return binascii.hexlify(signer.sign(h)).decode('ascii')
     
     elif DIGITAL_SIGNATURE_ALGO == 'SCHNORR':
         sender_address = "DD308AFEC5777E13121FA72B9CC1B7CC0139715309B086C960E18FD969774EB8"
         private_key_tmp = "C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C9"
-        return = binascii.hexlify(schnorr_sign(h, sender_private_key)).decode('ascii')
+        return binascii.hexlify(schnorr_sign(h, sender_private_key)).decode('ascii')
     else:
         log_error("Unkown DSA in config -- cannot create digital signature!")
 
@@ -53,6 +55,6 @@ def verify(msg, signature, sender_public_key):
         print("================ h = ", h)
         print("verification = ", verifier.verify(h, binascii.unhexlify(signature)))
     elif DIGITAL_SIGNATURE_ALGO == 'SCHNORR':    
-        return = schnorr_verify(msg, sender_public_key, signature)
+        return schnorr_verify(msg, sender_public_key, signature)
     else:
         log_error("Unknown DSA in config -- cannot verify signature!")

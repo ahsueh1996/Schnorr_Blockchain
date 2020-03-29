@@ -2,6 +2,7 @@
 import os
 import sys
 import math
+import time
 import pickle
 import collections
 from itertools import islice
@@ -45,6 +46,9 @@ def load_pickle(file_dir):
     ret = pickle.load(f, encoding='latin-1')
     f.close()
     return ret
+
+def time_millis():
+    return int(round(time.time() * 1000))
 
 class ListDict:
     '''
@@ -140,23 +144,23 @@ def broadcast(serializable_data, peers, route):
     '''
     Use this function with @app.route method=['POST'] functions
     '''
-        data = pickle.dumps(serializable_data)
-        for i, peer in enumerate(peers):
-            peer_broadcast_url = peer + route
-            progress(i, len(peers), "Post req @ {}".format(peer_broadcast_url))
-            try:
-                r = requests.post(peer_broadcast_url, data=data)
-                progress(i, len(peers), "Post received, reply: ".format(r.content))
-            except ConnectionError:
-                progress(i, len(peers), "Post failed")
-        progress(len(peers), len(peers), "Broadcast to route, completed: {}".format(route))
+    data = pickle.dumps(serializable_data)
+    for i, peer in enumerate(peers):
+        peer_broadcast_url = peer + route
+        progress(i, len(peers), "Post req @ {}".format(peer_broadcast_url))
+        try:
+            r = requests.post(peer_broadcast_url, data=data)
+            progress(i, len(peers), "Post received, reply: ".format(r.content))
+        except ConnectionError:
+            progress(i, len(peers), "Post failed")
+    progress(len(peers), len(peers), "Broadcast to route, completed: {}".format(route))
 
 
 def read_file(filename):
-'''
-Takes a filename (absolute path to file) and returns a list
-of strings where each item in the list is the line in file f.
-'''
+    '''
+    Takes a filename (absolute path to file) and returns a list
+    of strings where each item in the list is the line in file f.
+    '''
     f = open(filename, "r")
     lines = []
     for line in f:
@@ -174,10 +178,10 @@ def split_lines(lines):
     return [split_line(line) for line in lines]
 
 def map_csv(lines):
-'''
-This function can also be called immediately after READ_CSV. It will return a
-map from col 0 to col 1 by interpreting col 0 and 1 according to the user specification
-'''
+    '''
+    This function can also be called immediately after READ_CSV. It will return a
+    map from col 0 to col 1 by interpreting col 0 and 1 according to the user specification
+    '''
     m = split_lines(lines)
     my_map = {}
     for row in m:

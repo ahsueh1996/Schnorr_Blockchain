@@ -66,7 +66,7 @@ def SCHED_validate_and_add_possible_block(possible_block_dict, blockchain):
 
 def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, blockchain):
     possible_transaction = Transaction.from_transaction_dict(possible_transaction_dict)
-     if blockchain.transactions_pool.contains_key(possible_transaction.signature):
+    if blockchain.transactions_pool.contains_key(possible_transaction.signature):
         log_info('Transaction arleady in mem pool')
         return False
     

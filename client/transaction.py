@@ -18,14 +18,14 @@ class Transaction:
         self.sender_private_key = sender_private_key
         self.recipient_address = recipient_address
         self.value = value
-        self.timestamp = datetime.timestamp()
-        self.hash_id = data_hash(dict_to_utf8(self.msg_transaction_to_dict))
+        self.timestamp = utils.time_millis()
+        self.hash_id = data_hash(dict_to_utf8(self.content_to_dict))
         self.signature = self.sign_transaction()
         
     @classmethod
     def from_transaction_dict(cls,d):
         new_trans =  cls(d['sender_address'],
-                         'Unknown'
+                         'Unknown',
                          d['recipient_address'],
                          d['value'])
         cls.timestamp = d[timeestamp()]
@@ -34,7 +34,7 @@ class Transaction:
         return cls  
 
 
-    def msg_to_dict(self):
+    def content_to_dict(self):
         d =  {'sender_address': self.sender_address,
               'recipient_address': self.recipient_address,
               'value': self.value,
@@ -42,10 +42,10 @@ class Transaction:
         return d
     
     def export_transaction_to_dict(self):
-        return self.msg_to_dict().update({'hash_id': self.hash_id, 'signature': self.signature})
+        return self.content_to_dict().update({'hash_id': self.hash_id, 'signature': self.signature})
 
     def sign_transaction(self):
-        self.signature = sign(self.msg_to_dict(), self.sender_private_key)
+        self.signature = sign(self.content_to_dict(), self.sender_private_key)
         
         
     def verify_transaction(self):
