@@ -22,9 +22,22 @@ def data_hash(data):
     if 'SHA' in config.HASH_ALGO:
         sha.update(data)
         return sha.hexdigest()
-    log_error("Unknown hash algo config -- returning 0")
-    return 0
+    log_error("[security.hash.data_hash] Unknown hash algo config -- returning None")
+    return None
 
 
-def dict_to_utf8 (d):
+def dict_to_bytes (d):
     return str(d).encode('utf-8')
+
+def hex_to_bytes(hex_string):
+    return bytes.fromhex(hex_string)
+
+def bytes_to_hex(bytes_):
+    return bytes_.hex()
+
+
+def dict_to_byte_hash(d):
+    return hex_to_bytes(data_hash(dict_to_bytes(d)))
+
+def dict_to_hash(d):
+    return data_hash(dict_to_bytes(d))

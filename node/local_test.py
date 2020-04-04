@@ -6,6 +6,7 @@ import datetime
 import requests
 import apscheduler
 from argparse import ArgumentParser
+from importlib import reload  
   
 
 
@@ -15,7 +16,7 @@ import config
 config.NODE_CSV_FILE = "./node/local_test_node_list.csv"
 import utils
 from utils import log_info, log_warn, log_error, progress
-from router import app, blockchain, node_resistry, sched
+import router
 from node.block import Block
 from node.blockchain import Blockchain
 from node.scheduled_routines import SCHED_mine_for_block, SCHED_mine_for_block_listener
@@ -24,11 +25,49 @@ from node.node_list import Node_Registry
 
 
 if __name__ == '__main__':
+    print('================')
+    log_info("[FROM MAIN] Using ECDSA")
+    print('================')
+    config.DIGITAL_SIGNATURE_ALGO = 'ECDSA'
+    router = reload(router)
+    from router import app, blockchain, node_resistry, sched
     t = blockchain.client.generate_random_transaction()    
-    log_info(t.content_to_dict)
-    log_info("Signing transaction...")
+    log_info("[FROM MAIN] Signing transaction...")
     t.sign_transaction()
-    log_info("Verifying transaction...")
+    log_info("[FROM MAIN] Verifying transaction...")
     t.verify_transaction()
+    log_info("[FROM MAIN] Verifying sabotaged tansaction...")
+    t.timestamp = utils.time_millis()
+    log_info("[FROM MAIN] sabatoged transaction: \n{}".format(utils.format_dict_to_str(t.content_to_dict())))
+    t.verify_transaction()
+    
+    print('\n\n')
+    log_info("[FROM MAIN] ECDSA Wallets")
+    print('================')
+    for i,wallet in enumerate(blockchain.client.wallets):
+        progress(i, i, "[FROM MAIN] wallet: \n{}".format(utils.format_dict_to_str(wallet)))
+    
+    
+    print('\n\n\n\n\n===============')
+    log_info("[FROM MAIN] Using SCHNORR")
+    print('================')
+    config.DIGITAL_SIGNATURE_ALGO = 'SCHNORR'
+    router = reload(router)
+    from router import app, blockchain, node_resistry, sched
+    t = blockchain.client.generate_random_transaction()    
+    log_info("[FROM MAIN] Signing transaction...")
+    t.sign_transaction()
+    log_info("[FROM MAIN] Verifying transaction...")
+    t.verify_transaction()
+    log_info("[FROM MAIN] Verifying sabotaged tansaction...")
+    t.timestamp = utils.time_millis()
+    log_info("[FROM MAIN] sabatoged transaction: \n{}".format(utils.format_dict_to_str(t.content_to_dict())))
+    t.verify_transaction()
+    
+    print('\n\n')
+    log_info("[FROM MAIN] SCHNORR Wallets")
+    print('================')
+    for i,wallet in enumerate(blockchain.client.wallets):
+        progress(i, i, "[FROM MAIN] wallet: \n{}".format(utils.format_dict_to_str(wallet)))
     
     

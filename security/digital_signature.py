@@ -2,6 +2,9 @@
 import sys
 import Crypto
 import binascii
+from ellipticcurve.ecdsa import Ecdsa
+from ellipticcurve.signature import Signature
+from hashlib import sha256
 
 import Crypto
 import Crypto.Random
@@ -13,48 +16,44 @@ from Crypto.Signature import PKCS1_v1_5
 sys.path.append('.')
 import config
 from utils import *
-from security.hash import data_hash, dict_to_utf8
+from security.hash import dict_to_hash, dict_to_byte_hash, dict_to_bytes, bytes_to_hex, hex_to_bytes
 from security.schnorr import schnorr_sign, schnorr_verify
+from security.ppk_keygen import ppk_get_back_object
 
-DIGITAL_SIGNATURE_ALGO = config.DIGITAL_SIGNATURE_ALGO
 
-def sign(msg, sender_private_key):
+def sign(dictionary_msg, sender_private_key):
+
+    _, sk = ppk_get_back_object(private_key=sender_private_key)
+        
+    if config.DIGITAL_SIGNATURE_ALGO == 'ECDSA':
+        h = str(dictionary_msg)
+        signature = Ecdsa.sign(h, sk).toPem()
+        log_info("[security.digital_signature.sign] ECDSA Signature: {}".format(signature))
+        return signature
     
-    h = data_hash(dict_to_utf8(msg))
-    
-    if DIGITAL_SIGNATURE_ALGO == 'ECDSA':
-        log_info('Hex pk: {}'.format(sender_private_key))
-        private_key = RSA.importKey(binascii.unhexlify(sender_private_key))
-        log_info('unhexed : {}'.format(private_key))
-        signer = PKCS1_v1_5.new(private_key)
-        return binascii.hexlify(signer.sign(h)).decode('ascii')
-    
-    elif DIGITAL_SIGNATURE_ALGO == 'SCHNORR':
-        sender_address = "DD308AFEC5777E13121FA72B9CC1B7CC0139715309B086C960E18FD969774EB8"
-        private_key_tmp = "C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C9"
-        return binascii.hexlify(schnorr_sign(h, sender_private_key)).decode('ascii')
+    elif config.DIGITAL_SIGNATURE_ALGO == 'SCHNORR':
+        h = dict_to_hash(dictionary_msg)
+        signature = schnorr_sign(h, sk)
+        log_info("[security.digital_signature.sign] Schnorr Signature: {}".format(signature))
+        return signature
     else:
-        log_error("Unkown DSA in config -- cannot create digital signature!")
+        log_error("[security.digital_signature.sign] Unkown DSA in config -- cannot create digital signature!")
 
 
 
 
-def verify(msg, signature, sender_public_key):
-    if DIGITAL_SIGNATURE_ALGO == 'ECDSA':
-        public_key_2 = RSA.importKey(binascii.unhexlify(public_key))
-		
-        verifier = PKCS1_v1_5.new(public_key_2)
-        print("verification = ", verifier)
-			
-        transaction = OrderedDict({'sender_address': public_key, 
-                                'recipient_address': "100",
-                                'value': value})
-        print("================ Transaction = ", Transaction)
-			
-        h = SHA.new(str(transaction).encode('utf8'))
-        print("================ h = ", h)
-        print("verification = ", verifier.verify(h, binascii.unhexlify(signature)))
-    elif DIGITAL_SIGNATURE_ALGO == 'SCHNORR':    
-        return schnorr_verify(msg, sender_public_key, signature)
+def verify(dictionary_msg, signature, sender_public_key):
+    
+    vk, _ = ppk_get_back_object(public_key=sender_public_key)
+    if config.DIGITAL_SIGNATURE_ALGO == 'ECDSA':
+        h = str(dictionary_msg)
+        check = Ecdsa.verify(h, Signature.fromPem(signature), vk) # True
+        log_info("[security.digital_signature.verify] ECDSA Verify result: {}".format(check))
+        return check
+    elif config.DIGITAL_SIGNATURE_ALGO == 'SCHNORR': 
+        h = dict_to_hash(dictionary_msg)
+        check = schnorr_verify(h, vk, signature)
+        log_info("[security.digital_signature.verify] Schnorr Verify result: {}".format(check))
+        return check
     else:
-        log_error("Unknown DSA in config -- cannot verify signature!")
+        log_error("[security.digital_signature.verify] Unknown DSA in config -- cannot verify signature!")

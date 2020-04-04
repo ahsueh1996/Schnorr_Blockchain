@@ -24,6 +24,7 @@ class Client:
 
     def __init__(self):
         self.wallets = []
+        self.make_wallets(DEFAULT_NUM_WALLETS)
         self.load_wallets()
     
     @staticmethod
@@ -35,7 +36,7 @@ class Client:
             wallet = {'public':pub,\
                       'private':pri}
             data.append(wallet)
-        log_info('writing ({}) wallets to pickle...'.format(amount))
+        log_info('[client.Client.make_wallets] writing ({}) wallets to pickle...'.format(amount))
         utils.save_pickle(data,WALLETS_DIR)
     
     def load_wallets(self):
@@ -49,6 +50,8 @@ class Client:
         receiver = random.randint(0,len(self.wallets))
         value = random.random()*1000
         transaction = Transaction(self.wallets[sender]['public'],self.wallets[sender]['private'],\
-                                  self.wallets[receiver]['private'],value)
+                                  self.wallets[receiver]['public'],value)
+        print(transaction.content_to_dict())
+        log_info("[client.Client.generate_random_transaction] transaction generated: \n{}".format(utils.format_dict_to_str(transaction.content_to_dict())))
         return transaction
     

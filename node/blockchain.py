@@ -8,7 +8,6 @@ sys.path.append('.')
 import config
 import utils
 from utils import log_info, log_warn, log_error, progress, ListDict
-from security.hash import data_hash, dict_to_utf8
 from client.client import Client
 from node.block import Block
 
@@ -25,6 +24,7 @@ class Blockchain:
         self.client = Client()
         self.peers = peers
         self.create_genesis_block()
+        log_info("[node.blockchain.Blockchain.__init__] Blockchain created")
 
     def create_genesis_block(self):
         genesis_block = Block(

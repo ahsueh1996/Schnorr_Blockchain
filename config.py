@@ -2,7 +2,7 @@ import os
 
 ROOT_DIR = os.getcwd()
 
-KEYGEN_ALGO = 'RSA'
+KEYGEN_ALGO = 'ECDSA'
 DIGITAL_SIGNATURE_ALGO = 'ECDSA'
 HASH_ALGO = 'SHA256'
 
@@ -11,6 +11,7 @@ QUIET = 1
 WARN = 2
 VERBOSE = 3
 LOG_LEVEL = 3 
+LOG_FILE = "./log.txt"
 
 
 MINING_REWARD = 1

@@ -56,18 +56,18 @@ def point_from_bytes(b):
     x = int_from_bytes(b)
        
     if x >= p:
-        print("#### x ", x)
+        # print("#### x ", x)
         return None
     y_sq = (pow(x, 3, p) + 7) % p
     y = pow(y_sq, (p + 1) // 4, p)
     
-    print("######################", y)
-    print("######################", x)
-    print("###################### ", (pow(y, 2, p) - pow(x, 3, p)) % p)
+    # print("######################", y)
+    # print("######################", x)
+    # print("###################### ", (pow(y, 2, p) - pow(x, 3, p)) % p)
      
     if pow(y, 2, p) != y_sq:
-        print("#### pow(y, 2, p) = ", pow(y, 2, p))
-        print("#### y_sq = ", y_sq)
+        # print("#### pow(y, 2, p) = ", pow(y, 2, p))
+        # print("#### y_sq = ", y_sq)
         return None
     return [x, y]
 
@@ -85,7 +85,10 @@ def has_square_y(P):
 
 ''' TO DO # DELETE '''
 def pubkey_gen(seckey): 
-    x = int_from_bytes(seckey)
+#    seckey_hex = int("0x"+seckey, 16) # convert seckey to HEX
+#    seckey_byte = seckey_hex.to_bytes(32, byteorder="big") # convert seckey to BYTE
+    seckey_byte = seckey
+    x = int_from_bytes(seckey_byte)
     if not (1 <= x <= n - 1):
         raise ValueError('The secret key must be an integer in the range 1..n-1.')
     P = point_mul(G, x)
@@ -94,18 +97,18 @@ def pubkey_gen(seckey):
 def schnorr_sign(msg, seckey0):
     ''' ---------------------------------------------------------------------------------------- '''
 #    msg = "5E2D58D8B3BCDF1ABADEC7829054F90DDA9805AAB56C77333024B9D0A508B75C"
-    print("==== sent msg = ", msg)
+    # print("==== sent msg = ", msg)
     msg_hex = int("0x"+msg, 16) # convert msg to HEX
     msg_byte = msg_hex.to_bytes(32, byteorder="big") # convert msg to BYTE
-    seckey0_hex=0xC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C9
-    seckey0_byte = seckey0_hex.to_bytes(32, byteorder="big")  # convert msg to BYTE #3
-    seckey0_byte_32=seckey0_byte
-    print("########## seckey0_byte ########## ", seckey0_byte)
-    print("########## seckey0_byte ########## ", seckey0_byte.hex())
+    # seckey0_hex=0xC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C9
+    # seckey0_byte = seckey0_hex.to_bytes(32, byteorder="big")  # convert msg to BYTE #3
+    # seckey0_byte_32=seckey0_byte
+    # print("########## seckey0_byte ########## ", seckey0_byte)
+    # print("########## seckey0_byte ########## ", seckey0_byte.hex())
     ''' ---------------------------------------------------------------------------------------- '''
     if len(msg_byte) != 32:
         raise ValueError('The message must be a 32-byte array.')
-    seckey0 = int_from_bytes(seckey0_byte_32)
+    seckey0 = int_from_bytes(seckey0)
     if not (1 <= seckey0 <= n - 1):
         raise ValueError('The secret key must be an integer in the range 1..n-1.')
     P = point_mul(G, seckey0)
@@ -116,12 +119,13 @@ def schnorr_sign(msg, seckey0):
     R = point_mul(G, k0)
     k = n - k0 if not has_square_y(R) else k0
     e = int_from_bytes(tagged_hash("BIPSchnorr", bytes_from_point(R) + bytes_from_point(P) + msg_byte)) % n
-    return bytes_from_point(R) + bytes_from_int((k + e * seckey) % n)
+    sig = bytes_from_point(R) + bytes_from_int((k + e * seckey) % n)
+    return binascii.hexlify(sig).decode('ascii')
 
 def schnorr_verify(msg, pubkey, sig):
     ''' ---------------------------------------------------------------------------------------- '''
 #    msg = "5E2D58D8B3BCDF1ABADEC7829054F90DDA9805AAB56C77333024B9D0A508B75C"
-    print("==== received msg = ", msg)
+    # print("==== received msg = ", msg)
     msg_hex = int("0x"+msg, 16) # convert msg to HEX
     msg_byte = msg_hex.to_bytes(32, byteorder="big") # convert msg to BYTE
     '''
@@ -133,18 +137,20 @@ def schnorr_verify(msg, pubkey, sig):
     '''
  #   pubkey_hex=0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
  #   pubkey_hex=0xDFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659
-    pubkey_hex=0xDD308AFEC5777E13121FA72B9CC1B7CC0139715309B086C960E18FD969774EB8
-    pubkey_byte = pubkey_hex.to_bytes(32, byteorder="big")  # convert msg to BYTE #3
-    pubkey_byte_32=pubkey_byte
+    # pubkey_hex=0xDD308AFEC5777E13121FA72B9CC1B7CC0139715309B086C960E18FD969774EB8
+    # pubkey_byte = pubkey_hex.to_bytes(32, byteorder="big")  # convert msg to BYTE #3
+    # pubkey_byte_32=pubkey_byte
     
-    print("===== pubkey_hex = ", hex(pubkey_hex))
-    print("===== pubkey_byte = ",  pubkey_byte)
-    print("===== pubkey_byte_32 = ",  pubkey_byte_32)
+    pubkey_byte_32 = pubkey
+    
+    # print("===== pubkey_hex = ", hex(pubkey_hex))
+    # print("===== pubkey_byte = ",  pubkey_byte)
+    # print("===== pubkey_byte_32 = ",  pubkey_byte_32)
     
     sig_hex = int("0x"+sig, 16) # convert seckey to HEX
     sig_byte = sig_hex.to_bytes(64, byteorder="big") # convert msg to BYTE
     
-    print("===== sig_byte = ", sig_byte)
+    # print("===== sig_byte = ", sig_byte)
     ''' ---------------------------------------------------------------------------------------- '''
     
     if len(msg_byte) != 32:
@@ -160,19 +166,19 @@ def schnorr_verify(msg, pubkey, sig):
     r = int_from_bytes(sig_byte[0:32])
     s = int_from_bytes(sig_byte[32:64])
     ''' ---------------------------------------------------------------------------------------- '''
-    print("======= r = ", r)
-    print("======= s = ", s)
-    print("======= n = ", n)
+    # print("======= r = ", r)
+    # print("======= s = ", s)
+    # print("======= n = ", n)
     ''' ---------------------------------------------------------------------------------------- '''
     if (r >= p or s >= n):
         return False
-    print("%%%% ok")
+    # print("%%%% ok")
     e = int_from_bytes(tagged_hash("BIPSchnorr", sig_byte[0:32] + pubkey_byte_32[0:32]  + msg_byte)) % n
-    print("%%%% e = ", e)
+    # print("%%%% e = ", e)
     R = point_add(point_mul(G, s), point_mul(P, n - e))
     ''' ---------------------------------------------------------------------------------------- '''
-    print("======= R = ", R)
-    print("======= has_square_y(R) = ", has_square_y(R))
+    # print("======= R = ", R)
+    # print("======= has_square_y(R) = ", has_square_y(R))
     ''' ---------------------------------------------------------------------------------------- '''
     if R is None or not has_square_y(R) or x(R) != r:
         return False

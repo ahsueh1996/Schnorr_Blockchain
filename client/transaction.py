@@ -9,7 +9,7 @@ import config
 import utils
 from utils import log_info, log_warn, log_error, progress
 from security.digital_signature import sign, verify
-from security.hash import data_hash, dict_to_utf8
+from security.hash import dict_to_hash
 
 class Transaction:
 
@@ -19,7 +19,7 @@ class Transaction:
         self.recipient_address = recipient_address
         self.value = value
         self.timestamp = utils.time_millis()
-        self.hash_id = data_hash(dict_to_utf8(self.content_to_dict))
+        self.hash_id = dict_to_hash(self.content_to_dict)
         self.signature = self.sign_transaction()
         
     @classmethod
@@ -49,7 +49,7 @@ class Transaction:
         
         
     def verify_transaction(self):
-        return verify(self)
+        return verify(self.content_to_dict(), self.signature, self.sender_address)
     
     def broadcast_transaction(self,peers):
         utils.broadcast(self.export_transaction_to_dict(), peers=peers, route="/peer_gossiped_new_transaction")        

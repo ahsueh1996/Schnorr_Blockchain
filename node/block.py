@@ -7,7 +7,7 @@ sys.path.append('.')
 import config
 import utils
 from utils import log_info, log_warn, log_error, progress
-from security.hash import data_hash, dict_to_utf8
+from security.hash import dict_to_hash
 
 
 class Block:
@@ -45,14 +45,14 @@ class Block:
         return self.block_content_to_dict().update({'block_hash': self.block_hash})
 
     def hash_block(self):
-        return data_hash(dict_to_utf8(self.block_content_to_dict()))
+        return dict_to_hash(self.block_content_to_dict())
 
     def mine(self):
         while True:
-            progress(self.nounce,0,'Mining block with nounce...')
+            progress(self.nounce,0,'[node.block.Block.mine] Mining block with nounce...')
             guess_hash = self.hash_block()
             if guess_hash[:self.mining_difficulty] == '0'*self.mining_difficulty:
-                progress(self.nounce,self.nounce,'Block mined @ {}'.format(guess_hash))
+                progress(self.nounce,self.nounce,'[node.block.Block.mine] Block mined @ {}'.format(guess_hash))
                 break
             self.nounce += 1
         self.block_hash = guess_hash

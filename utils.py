@@ -3,6 +3,7 @@ import os
 import sys
 import math
 import time
+import json
 import pickle
 import collections
 from itertools import islice
@@ -12,6 +13,28 @@ from requests.exceptions import ConnectionError
 sys.path.append(".")
 import config
 LOG_LEVEL = config.LOG_LEVEL
+LOG_FILE = config.LOG_FILE
+
+class Unbuffered:
+    def __init__(self, stream, file=None):
+    
+        self.stream = stream
+        if file:
+            self.fstream = open(file,'w')  # File where you need to keep the logs
+        else:
+            self.fstream=None
+    
+    def write(self, data):
+        self.stream.write(data)
+        self.stream.flush()
+        if self.fstream:
+            self.fstream.write(data)    # Write the data of stdout here to a text file as well
+   
+    def flush(self):
+        pass
+           
+
+sys.stdout=Unbuffered(sys.stdout, LOG_FILE)
 
 def progress(cur,total,description):
     if LOG_LEVEL >= config.VERBOSE:
@@ -49,6 +72,9 @@ def load_pickle(file_dir):
 
 def time_millis():
     return int(round(time.time() * 1000))
+
+def format_dict_to_str(d):
+    return json.dumps(d, indent = 4)
 
 class ListDict:
     '''
@@ -147,13 +173,13 @@ def broadcast(serializable_data, peers, route):
     data = pickle.dumps(serializable_data)
     for i, peer in enumerate(peers):
         peer_broadcast_url = peer + route
-        progress(i, len(peers), "Post req @ {}".format(peer_broadcast_url))
+        progress(i, len(peers), "[utils.broadcast] Post req @ {}".format(peer_broadcast_url))
         try:
             r = requests.post(peer_broadcast_url, data=data)
-            progress(i, len(peers), "Post received, reply: ".format(r.content))
+            progress(i, len(peers), "[utils.broadcast] Post received, reply: ".format(r.content))
         except ConnectionError:
-            progress(i, len(peers), "Post failed")
-    progress(len(peers), len(peers), "Broadcast to route, completed: {}".format(route))
+            progress(i, len(peers), "[utils.broadcast] Post failed")
+    progress(len(peers), len(peers), "[utils.broadcast] Broadcast to route, completed: {}".format(route))
 
 
 def read_file(filename):
