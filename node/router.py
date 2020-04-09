@@ -1,5 +1,6 @@
 # Native packages
 import sys
+import signal
 import requests
 import apscheduler
 from flask import Flask, jsonify, request, render_template
@@ -11,6 +12,7 @@ sys.path.append('.')
 from node.blockchain import Blockchain
 from node.node_list import Node_Registry
 from node.scheduled_routines import SCHED_validate_and_add_possible_block
+from utils import log_info, log_warn, log_error, progress
 
 
 # Instantiate the Node
@@ -19,6 +21,22 @@ CORS(app)
 node_resistry = Node_Registry()
 blockchain = Blockchain(node_resistry.id, node_resistry.peers)
 sched = BackgroundScheduler(standalone=True)
+
+def EXIT(signal, frame):
+    log_warn("\n\n------EXITING------")
+    try:
+            sched.remove_job('mining')
+            log_warn('Removed "mining" job')
+    except apscheduler.jobstores.base.JobLookupError:
+            log_warn('No "mining" job found')
+    try:
+        sched.shutdown()
+        log_warn("sched shutdown (ok)")
+    except apscheduler.schedulers.SchedulerNotRunningError:
+        log_warn("sched shutdown (not ok)")
+        pass
+    log_warn("sys exit now...")
+    sys.exit(0)
 
 @app.route('/')
 def index():

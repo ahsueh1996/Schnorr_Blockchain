@@ -2,8 +2,7 @@
 import os
 import sys
 import Crypto
-from ellipticcurve.privateKey import PrivateKey
-from ellipticcurve.publicKey import PublicKey
+
 
 # Project package
 sys.path.append('.')
@@ -11,7 +10,8 @@ import config
 import security.schnorr as schnorr
 from security.hash import bytes_to_hex, hex_to_bytes
 from utils import *
-
+from ellipticcurve.privateKey import PrivateKey
+from ellipticcurve.publicKey import PublicKey
 
 
 def ppk_keygen():

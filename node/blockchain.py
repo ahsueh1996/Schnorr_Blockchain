@@ -7,8 +7,9 @@ import datetime
 sys.path.append('.')
 import config
 import utils
-from utils import log_info, log_warn, log_error, progress, ListDict
+from utils import log_info, log_warn, log_error, progress, ListDict, dynamic_log_level
 from client.client import Client
+from client.transaction import Transaction
 from node.block import Block
 
 BLOCK_LIMIT = config.BLOCK_LIMIT
@@ -41,19 +42,31 @@ class Blockchain:
         
         if not self.mining_paused:
             # Put transaction from waiting list into block
-            chosen_transactions  = self.transactions_pool[0:min(BLOCK_LIMIT,len(self.transactions_pool))]   
+            try:
+                chosen_transactions  = self.transactions_pool[0:min(BLOCK_LIMIT,len(self.transactions_pool))]
+                if type(chosen_transactions) == type(Transaction):
+                    chosen_transactions = [chosen_transactions]
+            except IndexError:
+                chosen_transactions = []
             
 #           # Create the block
-            new_block = Block(previous_block_hash=self.chain[-1].block_hash,
-                              transactions=[t.export_transaction_to_dict for t in chosen_transactions],
-                              height=self.chain[-1].height+1,
+            prev_block = self.chain[[-1]][0]
+            new_block = Block(previous_block_hash=prev_block.block_hash,
+                              transactions=[t.export_transaction_to_dict() for t in chosen_transactions],
+                              height=prev_block.height+1,
                               start_nounce=self.chain_id*NOUNCE_DISTANCE)
-            return new_block.mine()
+            log_info('[node..Blockchain.mint_new_block_and_mine] Minted block has ({}) transactions. Mining...'\
+                     .format(len(chosen_transactions)))
+            dynamic_log_level.set_log_level(0)
+            new_block.mine()
+            dynamic_log_level.reset_user_log_level()
+            log_info('[node..Blockchain.mint_new_block_and_mine] Block mined @ {}'.format(new_block.block_hash))
+            return new_block
     
     def validate_possible_transaction(self,new_transaction):
         return new_transaction.verify_transaction()
             
-    def add_tranasction(self, new_transaction):
+    def add_transaction(self, new_transaction):
         '''
         This function should not be called on its own. We should schedule it so it does not fight the mining schedule
         '''
@@ -71,7 +84,7 @@ class Blockchain:
         '''
         self.chain.append(new_block.block_hash, new_block)
         for transaction in new_block.transactions:
-            self.transactions_pool.delete({transaction['hash_id']})
+            self.transactions_pool.delete({transaction['signature']})
 
     def __len__(self):
         return len(self.chain)

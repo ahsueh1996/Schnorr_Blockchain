@@ -46,12 +46,13 @@ class Client:
         self.wallets = utils.load_pickle(WALLETS_DIR)
         
     def generate_random_transaction(self):
-        sender = random.randint(0,len(self.wallets))
-        receiver = random.randint(0,len(self.wallets))
+        sender = random.randint(0,len(self.wallets)-1)      # apparently randint is inclusive..
+        receiver = random.randint(0,len(self.wallets)-1)
         value = random.random()*1000
         transaction = Transaction(self.wallets[sender]['public'],self.wallets[sender]['private'],\
                                   self.wallets[receiver]['public'],value)
-        print(transaction.content_to_dict())
-        log_info("[client.Client.generate_random_transaction] transaction generated: \n{}".format(utils.format_dict_to_str(transaction.content_to_dict())))
+        transaction.sign_transaction()
+        log_info("[client.Client.generate_random_transaction] transaction generated and signed: \n{}"\
+                 .format(utils.format_dict_to_str(transaction.export_transaction_to_dict())))
         return transaction
     

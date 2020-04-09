@@ -42,7 +42,9 @@ class Transaction:
         return d
     
     def export_transaction_to_dict(self):
-        return self.content_to_dict().update({'hash_id': self.hash_id, 'signature': self.signature})
+        d = self.content_to_dict()
+        d.update({'hash_id': self.hash_id, 'signature': self.signature})
+        return d
 
     def sign_transaction(self):
         self.signature = sign(self.content_to_dict(), self.sender_private_key)

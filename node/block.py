@@ -1,12 +1,13 @@
 # Native packages
 import os
 import sys
+from time import sleep
 
 # Project packages
 sys.path.append('.')
 import config
 import utils
-from utils import log_info, log_warn, log_error, progress
+from utils import log_info, log_warn, log_error, progress, dynamic_log_level
 from security.hash import dict_to_hash
 
 
@@ -23,11 +24,11 @@ class Block:
         
     @classmethod
     def from_mined_block_dict(cls, d):
-        new_block =  cls(d[previous_block_hash],
-                         d[transactions],
-                         d[height],
-                         start_nounce = d[nounce],
-                         mining_difficulty = sd[mining_difficulty])
+        new_block =  cls(d["previous_block_hash"],
+                         d["transactions"],
+                         d["height"],
+                         start_nounce = d["nounce"],
+                         mining_difficulty = sd["mining_difficulty"])
         cls.is_mined = True
         cls.block_hash = d[block_hash]
         return cls    
@@ -56,6 +57,7 @@ class Block:
                 break
             self.nounce += 1
         self.block_hash = guess_hash
+        return self
         
     def broadcast_block(self,peers):
         utils.broadcast(self.export_block_to_dict(), peers=peers, route="/peer_gossiped_new_block")        

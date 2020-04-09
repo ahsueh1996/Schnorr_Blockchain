@@ -5,6 +5,7 @@ import math
 import time
 import json
 import pickle
+import requests
 import collections
 from itertools import islice
 from requests.exceptions import ConnectionError
@@ -12,7 +13,7 @@ from requests.exceptions import ConnectionError
 # Project packages
 sys.path.append(".")
 import config
-LOG_LEVEL = config.LOG_LEVEL
+dynamic_log_level = config.Dynamic_Log_Level()
 LOG_FILE = config.LOG_FILE
 
 class Unbuffered:
@@ -37,7 +38,7 @@ class Unbuffered:
 sys.stdout=Unbuffered(sys.stdout, LOG_FILE)
 
 def progress(cur,total,description):
-    if LOG_LEVEL >= config.VERBOSE:
+    if dynamic_log_level.get_dynamic_log_level() >= config.VERBOSE:
         sys.stdout.write("\r[{}/{}]\t{}".format(cur,total,description))
         if cur == total:
             sys.stdout.write("\n")
@@ -45,17 +46,17 @@ def progress(cur,total,description):
     
 def log_error(msg,args=[]):
     msg = "[ERROR] " + msg
-    if LOG_LEVEL >= config.QUIET:
+    if dynamic_log_level.get_dynamic_log_level() >= config.QUIET:
         raise ValueError(msg,args)
     else:
         print(msg)
         
 def log_warn(msg):
-    if LOG_LEVEL >= config.WARN:
+    if dynamic_log_level.get_dynamic_log_level() >= config.WARN:
         print("[WARN] " + msg)
 
 def log_info(msg):
-    if LOG_LEVEL >= config.VERBOSE:
+    if dynamic_log_level.get_dynamic_log_level() >= config.VERBOSE:
         print("[INFO] " + msg)
         
         
@@ -100,23 +101,26 @@ class ListDict:
         self._index = 0
         
     def __getitem__(self,key_or_ind):
+        if len(self) == 0:
+            raise IndexError
         ttype, sel = self.recover_key_or_ind(key_or_ind)
         if ttype == 'key':
             return self.dict[sel]
         elif ttype == 'ind':
             ret = []
             for ind in sel:
-                ret.append(self.dict[next(islice(self.dict.items(), ind, None))[0]])
+                kv = next(islice(self.dict.items(), ind, None))
+                ret.append(kv[1])
             return ret
         elif ttype == 'int':
-            return next(islice(self.dict.items(), sel, None))
+            return next(islice(self.dict.items(), sel, None))[1]
         
     def __next__(self):
         if self._index >= len(self):
             self._index=0
             raise StopIteration
         else:
-            ret = self[[self._index]][0]
+            ret = self[[self._index]]
             self._index +=1
         return ret
     
@@ -171,15 +175,20 @@ def broadcast(serializable_data, peers, route):
     Use this function with @app.route method=['POST'] functions
     '''
     data = pickle.dumps(serializable_data)
+    failed = 0
     for i, peer in enumerate(peers):
         peer_broadcast_url = peer + route
         progress(i, len(peers), "[utils.broadcast] Post req @ {}".format(peer_broadcast_url))
         try:
             r = requests.post(peer_broadcast_url, data=data)
             progress(i, len(peers), "[utils.broadcast] Post received, reply: ".format(r.content))
-        except ConnectionError:
+        except (ConnectionError, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL) as e:
             progress(i, len(peers), "[utils.broadcast] Post failed")
-    progress(len(peers), len(peers), "[utils.broadcast] Broadcast to route, completed: {}".format(route))
+            failed = failed + 1
+    if failed > 0:
+        progress(len(peers), len(peers), "[utils.broadcast] Broadcast incomplete (failed)/(total): {}/{}".format(failed,len(peers)))
+    else:
+        progress(len(peers), len(peers), "[utils.broadcast] Broadcast complete")
 
 
 def read_file(filename):
