@@ -3,15 +3,16 @@ import sys
 import signal
 import requests
 import apscheduler
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, request
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Project packages
 sys.path.append('.')
+import utils
 from node.blockchain import Blockchain
 from node.node_list import Node_Registry
-from node.scheduled_routines import SCHED_validate_and_add_possible_block
+from node.scheduled_routines import SCHED_validate_and_add_possible_block, SCHED_validate_and_add_possible_transaction
 from utils import log_info, log_warn, log_error, progress
 
 
@@ -44,12 +45,17 @@ def index():
 
 @app.route('/peer_gossiped_new_block', methods=['POST'])
 def import_block_from_other_node():
-    mine.sched.add_job(SCHED_validate_and_add_possible_block, args=[new_block_dict], id='validate_possible_block')
+    log_info('[router./peer_gossiped_new_block] Import block from another node...')
+    new_block_dict = utils.receive(request.data)
+    log_info("[router./peer_gossiped_new_block] Recieved block: {}".format(new_block_dict['block_hash']))
+    sched.add_job(SCHED_validate_and_add_possible_block, args=[new_block_dict, blockchain, sched], id='validate_possible_block')
     return "blockchain_{}_received_block".format(blockchain.chain_id)
 
 
 @app.route('/peer_gossiped_new_transaction', methods=['POST'])
 def import_transaction_from_other_node():
-    mine.sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_block_dict], id='validate_possible_transaction')
+    log_info('[router./peer_gossiped_new_transaction] do nothing for now')
+    new_transaction_dict = utils.receive(request.data)
+    log_info("[router./peer_gossiped_new_transaction] Recieved transaction: {}".format(new_transaction_dict['signature']))
+    sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain], id='validate_possible_transaction')
     return "blockchain_{}_received_transaction".format(blockchain.chain_id)
-

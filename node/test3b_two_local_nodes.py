@@ -4,6 +4,7 @@ import sys
 import signal
 import glob
 import datetime
+import logging
 import requests
 import apscheduler
 from argparse import ArgumentParser
@@ -19,22 +20,24 @@ from node.block import Block
 from node.blockchain import Blockchain
 from node.scheduled_routines import SCHED_mine_for_block, SCHED_mine_for_block_listener
 
-signal.signal(signal.SIGINT, EXIT)
-signal.signal(signal.SIGTERM, EXIT)
+
 
 
 if __name__ == '__main__':
-    
-    sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
-    sched.add_listener(SCHED_mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
-    sched.start()
     
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', default=5001, type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
     
+    node_resistry.set_port_and_update(port)
+    blockchain.update_id_and_peers(node_resistry.id, node_resistry.peers)
     
-    
-        
-    app.run(host='128.100.241.138', port=port)s
+    sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
+    sched.add_listener(SCHED_mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
+    sched.start()
+
+    # Now start the flask app in silent mode    
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)        
+    app.run(host=node_resistry.ip, port=port)

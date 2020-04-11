@@ -14,6 +14,7 @@ import utils
 from utils import log_info, log_warn, log_error, progress, dynamic_log_level
 from node.block import Block
 from node.blockchain import Blockchain
+from client.transaction import Transaction
 
 
 
@@ -30,12 +31,13 @@ def SCHED_mine_for_block_listener(event):
     blockchain = e_return['blockchain']
     # invoke a function to generate more transactions
     amount = random.randint(0,15)
-    dynamic_log_level.set_log_level(0)
+    log_info("[SCHED_mine_for_block_listener]({}) Make some new transactions.. ".format(random_id))
+    # dynamic_log_level.set_log_level(0)
     for i in range(amount):
         new_transaction = blockchain.client.generate_random_transaction()
         blockchain.add_transaction(new_transaction)
         new_transaction.broadcast_transaction(blockchain.peers)
-    dynamic_log_level.reset_user_log_level()
+    # dynamic_log_level.reset_user_log_level()
     # check if the mining job has finished
     if event.job_id == 'mining':
         new_block = e_return['new_block']
@@ -52,27 +54,27 @@ def SCHED_validate_and_add_possible_block(possible_block_dict, blockchain, sched
     random_id = random.randint(0,1000)
     log_info("[SCHED_validate_and_add_possible_block]({}) Starting routine... ".format(random_id))
     possible_block = Block.from_mined_block_dict(possible_block_dict)
-    if block.chain.contains_key(possible_block.block_hash):
-        log_info('[SCHED_validate_and_add_possible_block]({}) Block arleady in chain'.format(random_int))
+    if blockchain.chain.contains_key(possible_block.block_hash):
+        log_info('[SCHED_validate_and_add_possible_block]({}) Block arleady in chain'.format(random_id))
         return {'validation': False, 'blockchain': blockchain}
     
     if blockchain.validate_possible_block(possible_block):
+        log_info('[SCHED_validate_and_add_possible_block]({}) Accept new block @ {}'.format(random_id, possible_block.block_hash))
         blockchain.add_block(possible_block)
-        log_info('[SCHED_validate_and_add_possible_block]({}) Accept new block @ {}'.format(random_int, possible_block.block_hash))
+        
 
         # we want to kill and restart the mining block
         try:
+            log_info('[SCHED_validate_and_add_possible_block]({}) Removing "mining" job...'.format(random_id))
             sched.remove_job('mining')
-            log_info('[SCHED_validate_and_add_possible_block]({}) Removed "mining" job'.format(random_int))
         except apscheduler.jobstores.base.JobLookupError:
-            log_info('[SCHED_validate_and_add_possible_block]({}) No "mining" job found'.format(random_int))
+            log_info('[SCHED_validate_and_add_possible_block]({}) No "mining" job found'.format(random_id))
     
-        log_info('[SCHED_validate_and_add_possible_block]({}) Restart "mining" job...'.format(random_int))
-        sched.add_job(SCHED_mine_for_block, kwargs={
-                        'rounds': STANDARD_ROUNDS, 'start_nonce': 0}, id='mining')  # add the block again
+        log_info('[SCHED_validate_and_add_possible_block]({}) Restart "mining" job...'.format(random_id))
+        sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
         return {'validation': True, 'blockchain': blockchain}
     else:
-        log_info('[SCHED_validate_and_add_possible_block]({}) REJECT new block @ {}'.format(random_int, possible_block.block_hash))
+        log_info('[SCHED_validate_and_add_possible_block]({}) REJECT new block @ {}'.format(random_id, possible_block.block_hash))
         return {'validation': False, 'blockchain': blockchain}
 
 def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, blockchain):
@@ -85,8 +87,8 @@ def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, block
     
     if blockchain.validate_possible_transaction(possible_transaction):
         blockchain.add_transaction(possible_transaction)
-        log_info('[SCHED_validate_and_add_possible_transaction]({}) Accept new transaction with signature @ {}'.format(random_id, possible_block.signature))
+        log_info('[SCHED_validate_and_add_possible_transaction]({}) Accept new transaction with signature @ {}'.format(random_id, possible_transaction.signature))
         return {'validation': True, 'blockchain': blockchain}
     else:
-        log_info('[SCHED_validate_and_add_possible_transaction]({}) REJECT new transaction with signature @ {}'.format(random_id, possible_block.signature))
+        log_info('[SCHED_validate_and_add_possible_transaction]({}) REJECT new transaction with signature @ {}'.format(random_id, possible_transaction.signature))
         return {'validation': False, 'blockchain': blockchain}

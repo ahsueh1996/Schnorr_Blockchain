@@ -24,14 +24,15 @@ class Block:
         
     @classmethod
     def from_mined_block_dict(cls, d):
-        new_block =  cls(d["previous_block_hash"],
-                         d["transactions"],
-                         d["height"],
-                         start_nounce = d["nounce"],
-                         mining_difficulty = sd["mining_difficulty"])
-        cls.is_mined = True
-        cls.block_hash = d[block_hash]
-        return cls    
+        new_block = cls(d["previous_block_hash"],
+                        d["transactions"],
+                        d["height"],
+                        start_nounce = d["nounce"],
+                        mining_difficulty = d["mining_difficulty"])
+        new_block.is_mined = True
+        new_block.block_hash = d["block_hash"]
+        new_block.timestamp = d['timestamp']
+        return new_block    
 
     def block_content_to_dict(self):
         d =  {'timestamp': self.previous_block_hash,
@@ -43,7 +44,9 @@ class Block:
         return d
     
     def export_block_to_dict(self):
-        return self.block_content_to_dict().update({'block_hash': self.block_hash})
+        d = self.block_content_to_dict()
+        d.update({'block_hash': self.block_hash})
+        return d
 
     def hash_block(self):
         return dict_to_hash(self.block_content_to_dict())
@@ -60,11 +63,15 @@ class Block:
         return self
         
     def broadcast_block(self,peers):
-        utils.broadcast(self.export_block_to_dict(), peers=peers, route="/peer_gossiped_new_block")        
+        d = self.export_block_to_dict()
+        # log_info('[node.block.Block.broadcast_block] broadcasting {} \n........'.format(utils.format_dict_to_str(d)))
+        utils.broadcast(d, peers=peers, route="/peer_gossiped_new_block")        
         
     def is_valid(self):
-        true_hash = self.hash_block
-        return true_hash == self.block_hash
+        log_info('[node..Block.is_valid] recorded hash: {}'.format(self.block_hash))
+        actual_hash = self.hash_block()
+        log_info('[node..Block.is_valid] actual hash: {}'.format(actual_hash))
+        return actual_hash == self.block_hash
     
     def __eq__(self, other):
         return self.export_block_to_dict() == other.export_block_to_dict()

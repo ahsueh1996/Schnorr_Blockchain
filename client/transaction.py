@@ -13,25 +13,26 @@ from security.hash import dict_to_hash
 
 class Transaction:
 
-    def __init__(self, sender_address, sender_private_key, recipient_address, value):
+    def __init__(self, sender_address, sender_private_key, recipient_address, value, auto_sign=True):
         self.sender_address = sender_address
         self.sender_private_key = sender_private_key
         self.recipient_address = recipient_address
         self.value = value
         self.timestamp = utils.time_millis()
-        self.hash_id = dict_to_hash(self.content_to_dict)
-        self.signature = self.sign_transaction()
+        if auto_sign:
+            self.hash_id = dict_to_hash(self.content_to_dict)
+            self.signature = self.sign_transaction()
         
     @classmethod
     def from_transaction_dict(cls,d):
         new_trans =  cls(d['sender_address'],
                          'Unknown',
                          d['recipient_address'],
-                         d['value'])
-        cls.timestamp = d[timeestamp()]
-        cls.hash_id = d['hash_id']
-        cls.signature = d['signature']
-        return cls  
+                         d['value'], auto_sign=False)
+        new_trans.timestamp = d['timestamp']
+        new_trans.hash_id = d['hash_id']
+        new_trans.signature = d['signature']
+        return new_trans  
 
 
     def content_to_dict(self):

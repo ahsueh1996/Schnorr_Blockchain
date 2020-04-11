@@ -52,7 +52,7 @@ class Client:
         transaction = Transaction(self.wallets[sender]['public'],self.wallets[sender]['private'],\
                                   self.wallets[receiver]['public'],value)
         transaction.sign_transaction()
-        log_info("[client.Client.generate_random_transaction] transaction generated and signed: \n{}"\
-                 .format(utils.format_dict_to_str(transaction.export_transaction_to_dict())))
+        # log_info("[client.Client.generate_random_transaction] transaction generated and signed: \n{}"\
+        #          .format(utils.format_dict_to_str(transaction.export_transaction_to_dict())))
         return transaction
     

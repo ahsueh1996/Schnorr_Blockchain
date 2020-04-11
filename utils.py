@@ -8,6 +8,7 @@ import pickle
 import requests
 import collections
 from itertools import islice
+from flask import request
 from requests.exceptions import ConnectionError
 
 # Project packages
@@ -35,9 +36,10 @@ class Unbuffered:
         pass
            
 
-sys.stdout=Unbuffered(sys.stdout, LOG_FILE)
+# sys.stdout=Unbuffered(sys.stdout, LOG_FILE)
 
 def progress(cur,total,description):
+    return
     if dynamic_log_level.get_dynamic_log_level() >= config.VERBOSE:
         sys.stdout.write("\r[{}/{}]\t{}".format(cur,total,description))
         if cur == total:
@@ -174,21 +176,31 @@ def broadcast(serializable_data, peers, route):
     '''
     Use this function with @app.route method=['POST'] functions
     '''
-    data = pickle.dumps(serializable_data)
+    data = json.dumps(serializable_data)
     failed = 0
     for i, peer in enumerate(peers):
-        peer_broadcast_url = peer + route
+        peer_broadcast_url = config.CONNECTION_ADAPTER + peer + route
         progress(i, len(peers), "[utils.broadcast] Post req @ {}".format(peer_broadcast_url))
         try:
             r = requests.post(peer_broadcast_url, data=data)
             progress(i, len(peers), "[utils.broadcast] Post received, reply: ".format(r.content))
         except (ConnectionError, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL) as e:
-            progress(i, len(peers), "[utils.broadcast] Post failed")
+            log_warn("[utils.broadcast] Post failed: {} ".format(e))
             failed = failed + 1
     if failed > 0:
         progress(len(peers), len(peers), "[utils.broadcast] Broadcast incomplete (failed)/(total): {}/{}".format(failed,len(peers)))
     else:
-        progress(len(peers), len(peers), "[utils.broadcast] Broadcast complete")
+        progress(len(peers), len(peers), "[utils.broadcast] Broadcast complete    ")
+        
+        
+def receive(serialized_data):
+    '''
+    Use this function with @app.route method=['POST'] functions
+    '''
+    # serialized_data = flask.request.data CALL THIS AT THE POSTED FUNCTION
+    data = json.loads(serialized_data)
+    log_info('[utils.receive] received data of type {}'.format(str(type(data))))
+    return data
 
 
 def read_file(filename):

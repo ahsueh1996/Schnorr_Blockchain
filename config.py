@@ -15,12 +15,14 @@ LOG_FILE = "./log.txt"
 
 
 MINING_REWARD = 1
-MINING_DIFFICULTY = 1
+MINING_DIFFICULTY = 4
 
 BLOCK_LIMIT = 10
 NOUNCE_DISTANCE = 10000
 
 NODE_CSV_FILE = "./node/node_list.csv"
+
+CONNECTION_ADAPTER = "http://"
 
 
 
@@ -45,4 +47,5 @@ class Dynamic_Log_Level():
         
     def get_dynamic_log_level(self):
         return self.singleton.LOG_LEVEL
+    
     

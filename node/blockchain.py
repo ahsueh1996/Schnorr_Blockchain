@@ -26,6 +26,16 @@ class Blockchain:
         self.peers = peers
         self.create_genesis_block()
         log_info("[node.blockchain.Blockchain.__init__] Blockchain created")
+        
+    def pause_mining(self):
+        self.mining_paused = True
+        
+    def resume_mining(self):
+        self.mining_paused = False
+        
+    def update_id_and_peers(self, chain_id, peers):
+        self.chain_id = chain_id
+        self.peers = peers
 
     def create_genesis_block(self):
         genesis_block = Block(
@@ -57,9 +67,9 @@ class Blockchain:
                               start_nounce=self.chain_id*NOUNCE_DISTANCE)
             log_info('[node..Blockchain.mint_new_block_and_mine] Minted block has ({}) transactions. Mining...'\
                      .format(len(chosen_transactions)))
-            dynamic_log_level.set_log_level(0)
+            # dynamic_log_level.set_log_level(0)
             new_block.mine()
-            dynamic_log_level.reset_user_log_level()
+            # dynamic_log_level.reset_user_log_level()
             log_info('[node..Blockchain.mint_new_block_and_mine] Block mined @ {}'.format(new_block.block_hash))
             return new_block
     
@@ -73,7 +83,12 @@ class Blockchain:
         self.transactions_pool.append(new_transaction.signature, new_transaction)
         
     def validate_possible_block(self, new_block):
-        if new_block.height > self.height() and new_block.is_valid():
+        log_info('[node..Blockchain.validate_possible_block] Validating block....')
+        is_newer = (new_block.height > self.chain[[-1]][0].height)
+        log_info('[node..Blockchain.validate_possible_block] New block is newer: {}'.format(is_newer))
+        is_valid = new_block.is_valid()
+        log_info('[node..Blockchain.validate_possible_block] New block is valid: {}'.format(is_valid))
+        if is_newer and is_valid:
             return True
         else:
             return False
@@ -84,7 +99,9 @@ class Blockchain:
         '''
         self.chain.append(new_block.block_hash, new_block)
         for transaction in new_block.transactions:
-            self.transactions_pool.delete({transaction['signature']})
+            key = transaction['signature']
+            if self.transactions_pool.contains_key(key):
+                self.transactions_pool.delete({key})
 
     def __len__(self):
         return len(self.chain)
