@@ -12,10 +12,10 @@ from argparse import ArgumentParser
 # Project packages
 sys.path.append('.')
 import config
-config.NODE_CSV_FILE = "./experiments/exp2.csv"
+config.NODE_CSV_FILE = "./tests/test4.csv"
 import utils
 from utils import log_info, log_warn, log_error, progress
-from router import app, blockchain, node_resistry, sched, EXIT
+from node.router import app, blockchain, node_resistry, sched, EXIT
 from node.block import Block
 from node.blockchain import Blockchain
 from node.scheduled_routines import SCHED_mine_for_block, SCHED_mine_for_block_listener
