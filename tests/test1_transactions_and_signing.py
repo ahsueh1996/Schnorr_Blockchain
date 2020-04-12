@@ -13,10 +13,11 @@ from importlib import reload
 # Project packages
 sys.path.append('.')
 import config
-config.NODE_CSV_FILE = "./tests/local_test_node_list.csv"
+config.NODE_CSV_FILE = "./tests/test2_and_3.csv"
 import utils
 from utils import log_info, log_warn, log_error, progress
-import router
+from experiments import exp_utils
+import node.router as router
 from node.block import Block
 from node.blockchain import Blockchain
 from node.scheduled_routines import SCHED_mine_for_block, SCHED_mine_for_block_listener
@@ -29,8 +30,7 @@ if __name__ == '__main__':
     log_info("[FROM MAIN] Using ECDSA")
     print('================')
     config.DIGITAL_SIGNATURE_ALGO = 'ECDSA'
-    router = reload(router)
-    from router import app, blockchain, node_resistry, sched
+    app, blockchain, node_resistry, sched = exp_utils.refreash_configs(router)
     t = blockchain.client.generate_random_transaction()    
     log_info("[FROM MAIN] Signing transaction...")
     t.sign_transaction()
@@ -52,8 +52,7 @@ if __name__ == '__main__':
     log_info("[FROM MAIN] Using SCHNORR")
     print('================')
     config.DIGITAL_SIGNATURE_ALGO = 'SCHNORR'
-    router = reload(router)
-    from router import app, blockchain, node_resistry, sched
+    app, blockchain, node_resistry, sched = exp_utils.refreash_configs(router)
     t = blockchain.client.generate_random_transaction()    
     log_info("[FROM MAIN] Signing transaction...")
     t.sign_transaction()
