@@ -28,7 +28,9 @@ def SCHED_mine_for_block_listener(event):
     random_id = random.randint(0,1000)
     log_info("[SCHED_mine_for_block_listener]({}) Event '{}' finished... ".format(random_id, event.job_id))
     e_return = event.retval
-    blockchain = e_return['blockchain']
+    blockchain = e_return['blockchain']        
+    
+    
     # invoke a function to generate more transactions
     amount = random.randint(0,15)
     log_info("[SCHED_mine_for_block_listener]({}) Make some new transactions.. ".format(random_id))
@@ -39,9 +41,11 @@ def SCHED_mine_for_block_listener(event):
         new_transaction.broadcast_transaction(blockchain.peers)
     # dynamic_log_level.reset_user_log_level()
     # check if the mining job has finished
+        
+        
     if event.job_id == 'mining':
         new_block = e_return['new_block']
-        sched = e_return['sched']
+        sched = e_return['sched']        
         if new_block:
             log_info("[SCHED_mine_for_block_listener]({}) Minted and Mined new block @ {}".format(random_id, new_block.block_hash))
             blockchain.add_block(new_block)

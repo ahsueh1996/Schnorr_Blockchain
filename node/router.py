@@ -54,7 +54,7 @@ def import_block_from_other_node():
 
 @app.route('/peer_gossiped_new_transaction', methods=['POST'])
 def import_transaction_from_other_node():
-    log_info('[router./peer_gossiped_new_transaction] do nothing for now')
+    log_info('[router./peer_gossiped_new_transaction] Import transaction from another node...')
     new_transaction_dict = utils.receive(request.data)
     log_info("[router./peer_gossiped_new_transaction] Recieved transaction: {}".format(new_transaction_dict['signature']))
     sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain], id='validate_possible_transaction')

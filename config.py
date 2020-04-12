@@ -2,8 +2,7 @@ import os
 
 ROOT_DIR = os.getcwd()
 
-KEYGEN_ALGO = 'ECDSA'
-DIGITAL_SIGNATURE_ALGO = 'ECDSA'
+DIGITAL_SIGNATURE_ALGO = 'SCHNORR'
 HASH_ALGO = 'SHA256'
 
 IGNORE = 0
@@ -26,26 +25,6 @@ CONNECTION_ADAPTER = "http://"
 
 
 
-class Dynamic_Log_Level():
-    class _singleton():
-        def __init__(self):
-            self.user_set_log_level = LOG_LEVEL
-            self.LOG_LEVEL = LOG_LEVEL
-    
-    singleton = None
-            
-    def __init__(self):
-        if not self.singleton:
-            self.singleton = Dynamic_Log_Level._singleton()
-        
-    def set_log_level(self, level):
-        self.singleton.LOG_LEVEL = level
-    
-    def reset_user_log_level(self):
-        self.singleton.LOG_LEVEL = self.singleton.user_set_log_level
-        
-        
-    def get_dynamic_log_level(self):
-        return self.singleton.LOG_LEVEL
+
     
     

@@ -24,8 +24,11 @@ class Blockchain:
         self.chain_id = chain_id
         self.client = Client()
         self.peers = peers
+        self.block_limit = BLOCK_LIMIT
+        self.nounce_distance = NOUNCE_DISTANCE
         self.create_genesis_block()
         log_info("[node.blockchain.Blockchain.__init__] Blockchain created")
+
         
     def pause_mining(self):
         self.mining_paused = True
@@ -43,7 +46,7 @@ class Blockchain:
             transactions=[],
             height=1,
             mining_difficulty=1,
-            start_nounce=self.chain_id*NOUNCE_DISTANCE)
+            start_nounce=self.chain_id*self.nounce_distance)
         genesis_block.mine()
         self.add_block(genesis_block)
         return
@@ -53,7 +56,7 @@ class Blockchain:
         if not self.mining_paused:
             # Put transaction from waiting list into block
             try:
-                chosen_transactions  = self.transactions_pool[0:min(BLOCK_LIMIT,len(self.transactions_pool))]
+                chosen_transactions  = self.transactions_pool[0:min(self.block_limit,len(self.transactions_pool))]
                 if type(chosen_transactions) == type(Transaction):
                     chosen_transactions = [chosen_transactions]
             except IndexError:

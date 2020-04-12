@@ -13,7 +13,7 @@ from importlib import reload
 # Project packages
 sys.path.append('.')
 import config
-config.NODE_CSV_FILE = "./node/local_test_node_list.csv"
+config.NODE_CSV_FILE = "./tests/local_test_node_list.csv"
 import utils
 from utils import log_info, log_warn, log_error, progress
 import router

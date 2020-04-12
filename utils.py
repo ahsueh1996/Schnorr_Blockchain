@@ -14,8 +14,33 @@ from requests.exceptions import ConnectionError
 # Project packages
 sys.path.append(".")
 import config
-dynamic_log_level = config.Dynamic_Log_Level()
-LOG_FILE = config.LOG_FILE
+# dynamic_log_level = config.Dynamic_Log_Level()
+
+
+class Dynamic_Log_Level():
+    class _singleton():
+        def __init__(self, level):
+            self.user_set_log_level = level
+            self.dynamic_log_level = level
+    
+    singleton = None
+            
+    def __init__(self, level=None):
+        if not self.singleton:
+            self.singleton = Dynamic_Log_Level._singleton(level)
+        elif self.singleton!=None and level!=None:
+            self.singleton = Dynamic_Log_Level._singleton(level)
+        
+    def set_log_level(self, level):
+        self.singleton.dynamic_log_level = level
+    
+    def reset_user_log_level(self):
+        self.singleton.dynamic_log_level = self.singleton.user_set_log_level
+        
+        
+    def get_dynamic_log_level(self):
+        return self.singleton.dynamic_log_level
+dynamic_log_level = Dynamic_Log_Level(config.LOG_LEVEL)
 
 class Unbuffered:
     def __init__(self, stream, file=None):
@@ -34,20 +59,19 @@ class Unbuffered:
    
     def flush(self):
         pass
-           
-
-# sys.stdout=Unbuffered(sys.stdout, LOG_FILE)
+# LOG_FILE = config.LOG_FILE
+# # sys.stdout=Unbuffered(sys.stdout, LOG_FILE)
 
 def progress(cur,total,description):
     return
     if dynamic_log_level.get_dynamic_log_level() >= config.VERBOSE:
-        sys.stdout.write("\r[{}/{}]\t{}".format(cur,total,description))
+        sys.stdout.write("\r\t[{}/{}]\t{}".format(cur,total,description))
         if cur == total:
             sys.stdout.write("\n")
         sys.stdout.flush()
     
 def log_error(msg,args=[]):
-    msg = "[ERROR] " + msg
+    msg = "\t[ERROR] " + msg
     if dynamic_log_level.get_dynamic_log_level() >= config.QUIET:
         raise ValueError(msg,args)
     else:
@@ -55,11 +79,11 @@ def log_error(msg,args=[]):
         
 def log_warn(msg):
     if dynamic_log_level.get_dynamic_log_level() >= config.WARN:
-        print("[WARN] " + msg)
+        print("\t[WARN] " + msg)
 
 def log_info(msg):
     if dynamic_log_level.get_dynamic_log_level() >= config.VERBOSE:
-        print("[INFO] " + msg)
+        print("\t[INFO] " + msg)
         
         
 def save_pickle(serializable_data, file_dir):
@@ -185,7 +209,7 @@ def broadcast(serializable_data, peers, route):
             r = requests.post(peer_broadcast_url, data=data)
             progress(i, len(peers), "[utils.broadcast] Post received, reply: ".format(r.content))
         except (ConnectionError, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL) as e:
-            log_warn("[utils.broadcast] Post failed: {} ".format(e))
+            log_warn("[utils.broadcast] Post failed")
             failed = failed + 1
     if failed > 0:
         progress(len(peers), len(peers), "[utils.broadcast] Broadcast incomplete (failed)/(total): {}/{}".format(failed,len(peers)))
