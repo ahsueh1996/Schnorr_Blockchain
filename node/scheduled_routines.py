@@ -106,6 +106,7 @@ def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, block
     
     
 def SCHED_master_node(blockchain, sched, node_registry):
+    random_id = random.randint(0,1000)
     log_info("[SCHED_master_node]({}) Checking if finish flag received form all nodes... ".format(random_id))
     received = len(blockchain.peers)
     total_expected = len(node_registry.nodemap.keys())
