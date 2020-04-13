@@ -46,7 +46,7 @@ class Blockchain:
         genesis_block = Block(
             previous_block_hash=0,
             transactions=[],
-            height=1,
+            height=0,
             mining_difficulty=1,
             start_nounce=self.chain_id*self.nounce_distance)
         genesis_block.mine()
