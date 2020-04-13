@@ -2,6 +2,7 @@
 import os
 import sys
 import glob
+import time
 import datetime
 import requests
 import random
@@ -18,6 +19,7 @@ from node.blockchain import Blockchain
 from client.transaction import Transaction
 
 def SCHED_do_none(blockchain, sched):
+    time.sleep(0.5)
     return {'sched': sched, 'blockchain': blockchain,}
 
 def SCHED_mine_for_block(blockchain, sched):
