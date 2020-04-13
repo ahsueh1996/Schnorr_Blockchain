@@ -36,7 +36,7 @@ if __name__ == '__main__':
     blockchain.update_id_and_peers(999, [], ip=ip+":"+str(port))
     blockchain.pause_mining()
     
-    if args.skip ==0:
+    if args.skip==0:
         input('Ready. Press enter to start all nodes....')
         peers = list(node_registry.nodemap.keys())
         print("Peers: {}".format(peers))
