@@ -81,8 +81,11 @@ def SCHED_mine_for_block_listener(event):
         sched = e_return['sched']        
         if new_block:
             log_info("[SCHED_mine_for_block_listener]({}) Minted and Mined new block @ {}".format(random_id, new_block.block_hash))
-            blockchain.add_block(new_block)
-            new_block.broadcast_block(blockchain.peers)
+            if blockchain.validate_possible_block(new_block):
+                blockchain.add_block(new_block)
+                new_block.broadcast_block(blockchain.peers)
+            else:
+                log_info("[SCHED_mine_for_block_listener]({}) Someone already mined a newer block! REJECT new block proposal".format(random_id))
             sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
         else: 
             log_info("[SCHED_mine_for_block_listener]({}) Mining returned {}".format(random_id, new_block))
