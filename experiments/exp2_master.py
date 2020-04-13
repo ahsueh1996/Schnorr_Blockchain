@@ -55,9 +55,13 @@ if __name__ == '__main__':
             log_info('\tGetting block ({}) ......'.format(h))
             response = utils.broadcast(str(h), [peer], "/sync_next_block")
             block_dict = utils.receive(response[0])
-            block_hash = block_dict['block_hash']
-            block_height = block_dict['height']
-            chain[block_height].append(block_hash,block_dict)
+            if type(block_dict) == dict:
+                block_hash = block_dict['block_hash']
+                block_height = block_dict['height']
+                log_info('(height,hash) = {},\n\t{}'.format(block_height,block_hash[0:25]))
+                chain[block_height].append(block_hash,block_dict)
+            else:
+                log_info('invalid...')
     log_info('Chain saved: {}'.format([len(each) for each in chain]))
             
     # visualize and save photo of blockchain
