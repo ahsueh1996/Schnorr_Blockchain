@@ -26,18 +26,32 @@ def SCHED_mine_for_block(blockchain, sched):
     random_id = random.randint(0,1000)    
     log_info("[SCHED_mine_for_block]({}) Starting routine... ".format(random_id))
     return {'sched': sched, 'blockchain': blockchain, 'new_block': blockchain.mint_new_block_and_mine()}
-    
+
+def make_more_transactions(amount,blockchain):
+        # dynamic_log_level.set_log_level(0)
+        for i in range(amount):
+            new_transaction = blockchain.client.generate_random_transaction()
+            blockchain.add_transaction(new_transaction)
+            new_transaction.broadcast_transaction(blockchain.peers)
+        # dynamic_log_level.reset_user_log_level()    
 
 def SCHED_mine_for_block_listener(event):
     random_id = random.randint(0,1000)
     log_info("[SCHED_mine_for_block_listener]({}) Event '{}' finished... ".format(random_id, event.job_id))
     e_return = event.retval
     blockchain = e_return['blockchain']    
+    
+    '''
+    Start of chain idling
+    '''
     if event.job_id =='my_idle' and blockchain.mining_paused:
         sched = e_return['sched']    
         sched.add_job(SCHED_do_none, args=[blockchain, sched], id='my_idle')
         return 'idle'
-        
+    
+    '''
+    END OF CHAIN condition check
+    '''
     current_height = blockchain.chain[[-1]][0].height
     log_info("[SCHED_mine_for_block_listener]({}) Current height {}/{} ... ".format(random_id, current_height, config.END_OF_CHAIN))
     if  current_height >= config.END_OF_CHAIN:
@@ -50,18 +64,18 @@ def SCHED_mine_for_block_listener(event):
             log_info("[SCHED_mine_for_block_listener]({}) Nothing to do.... hanging... ".format(random_id))
         return "END OF MINING..."
     
+    '''
+    check if block has been discover on the network as a whole
+    '''
     if event.job_id == 'mining' or 'possible_block' in event.job_id:
         # invoke a function to generate more transactions
         amount = random.randint(0,config.TRANSACTION_RATE)
         log_info("[SCHED_mine_for_block_listener]({}) Make some new transactions.. ".format(random_id))
-        # dynamic_log_level.set_log_level(0)
-        for i in range(amount):
-            new_transaction = blockchain.client.generate_random_transaction()
-            blockchain.add_transaction(new_transaction)
-            new_transaction.broadcast_transaction(blockchain.peers)
-        # dynamic_log_level.reset_user_log_level()
-        # check if the mining job has finished        
+        make_more_transactions(amount, blockchain)
         
+    '''
+    check if the mining job has finished
+    '''
     if event.job_id == 'mining':
         new_block = e_return['new_block']
         sched = e_return['sched']        

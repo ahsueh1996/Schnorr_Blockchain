@@ -71,7 +71,23 @@ if __name__ == '__main__':
             else:
                 log_info('invalid...')
     log_info('Chain saved: {}'.format([len(each) for each in chain]))
-            
-    # visualize and save photo of blockchain
     
-    # 
+    consensus = len(chain[-1]) == 1
+    log_info('Consensus: {}'.format(consensus))
+    
+    throughputs = []
+    for each in chain[-1]:
+        total_transactions = len(each['transactions'])
+        end_time = each['timestamp']
+        start_time = end_time
+        # backtrack
+        curr = each
+        while curr['height'] > 0:
+            prev_hash = curr['previous_block_hash']
+            curr = chain[curr['height']-1][{prev_hash}]
+            total_transactions = total_transactions + len(curr['transactions'])
+            start_time = min(start_time, curr['timestamp'])
+        throughputs.append(total_transactions/(end_time-start_time)*1000)  # throughput in trans per sec
+        
+    avg_throughput = sum(throughputs)/len(throughputs)
+    log_info('Avg throughput: {}'.format(avg_throughput))    
