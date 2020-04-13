@@ -193,8 +193,6 @@ class ListDict:
     def append(self, key, value):
         self.dict.update({key:value})   
 
-    
-    
 
 def broadcast(serializable_data, peers, route):
     '''
@@ -209,7 +207,7 @@ def broadcast(serializable_data, peers, route):
         try:
             r = requests.post(peer_broadcast_url, data=data)
             progress(i, len(peers), "[utils.broadcast] Post received, reply: ".format(r.content))
-            responses.append(r.json())
+            responses.append(r.content)
         except (ConnectionError, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL) as e:
             log_warn("[utils.broadcast] Post failed")
             failed = failed + 1
