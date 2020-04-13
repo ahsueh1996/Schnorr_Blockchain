@@ -14,7 +14,7 @@ sys.path.append('.')
 import utils
 from node.blockchain import Blockchain
 from node.node_list import Node_Registry
-from node.scheduled_routines import SCHED_validate_and_add_possible_block, SCHED_validate_and_add_possible_transaction, SCHED_master_node
+from node.scheduled_routines import *
 from utils import log_info, log_warn, log_error, progress
 
 
