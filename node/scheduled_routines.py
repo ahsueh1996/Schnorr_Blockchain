@@ -17,8 +17,8 @@ from node.block import Block
 from node.blockchain import Blockchain
 from client.transaction import Transaction
 
-def SCHED_do_none():
-    return {}
+def SCHED_do_none(blockchain):
+    return {'blockchain': blockchain}
 
 def SCHED_mine_for_block(blockchain, sched):
     random_id = random.randint(0,1000)    
@@ -33,7 +33,7 @@ def SCHED_mine_for_block_listener(event):
     blockchain = e_return['blockchain']    
     
     if event.job_id =='idle' and blockchain.mining_paused:
-        sched.add_job(SCHED_do_none, id='idle')
+        sched.add_job(SCHED_do_none, args=[blockchain] id='idle')
         return 'idle'
         
     current_height = blockchain.chain[[-1]][0].height
