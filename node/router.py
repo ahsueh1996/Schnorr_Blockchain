@@ -41,11 +41,11 @@ def EXIT(signal, frame):
     log_warn("sys exit now...")
     sys.exit(0)
 
-@app.route('/')
+@app.route('/', method=['POST'])
 def index():
     return 'root'
 
-@app.route('/start')
+@app.route('/start', method=['POST'])
 def start():
     log_info('===== START SIGNAL RECEIVED ====')
     blockchain.resume_mining()
