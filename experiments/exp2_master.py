@@ -103,7 +103,7 @@ if __name__ == '__main__':
         
         tranasaction_counts.append(total_transactions)
         throughputs.append(total_transactions/(end_time-start_time)*1000)  # throughput in trans per sec
-        time_per_block((end_time-start_time)*1000/max_height)
+        time_per_block.append((end_time-start_time)*1000/max_height)
         
     avg_throughput = sum(throughputs)/len(throughputs)
     log_info('Avg throughput: {}'.format(avg_throughput))  
