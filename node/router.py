@@ -1,6 +1,7 @@
 # Native packages
 import sys
 import signal
+import random
 import requests
 import apscheduler
 from flask import Flask, jsonify, request, render_template, request
@@ -45,26 +46,30 @@ def index():
 
 @app.route('/peer_gossiped_new_block', methods=['POST'])
 def import_block_from_other_node():
-    log_info('[router./peer_gossiped_new_block] Import block from another node...')
+    random_id = random.randint(0,5000)
+    log_info('[router./peer_gossiped_new_block]({}) Import block from another node...'.format(random_id))
     new_block_dict = utils.receive(request.data)
-    log_info("[router./peer_gossiped_new_block] Recieved block: {}".format(new_block_dict['block_hash']))
+    log_info("[router./peer_gossiped_new_block]({}) Recieved block: {}".format(random_id,new_block_dict['block_hash'][:25]))
     sched.add_job(SCHED_validate_and_add_possible_block, args=[new_block_dict, blockchain, sched], id='validate_possible_block')
+    log_info('[router./peer_gossiped_new_block]({}) Completed.'.format(random_id))
     return "blockchain_{}_received_block".format(blockchain.chain_id)
 
 
 @app.route('/peer_gossiped_new_transaction', methods=['POST'])
 def import_transaction_from_other_node():
-    log_info('[router./peer_gossiped_new_transaction] Import transaction from another node...')
+    random_id = random.randint(0,5000)
+    log_info('[router./peer_gossiped_new_transaction]({}) Import transaction from another node...'.format(random_id))
     new_transaction_dict = utils.receive(request.data)
-    log_info("[router./peer_gossiped_new_transaction] Recieved transaction: {}".format(new_transaction_dict['signature']))
-    sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain], id='validate_possible_transaction')
+    log_info("[router./peer_gossiped_new_transaction]({}) Recieved transaction: {}".format(random_id,new_transaction_dict['signature'][:25]))
+    sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain], id='validate_possible_transaction-'+str(random_id))
+    log_info('[router./peer_gossiped_new_transaction]({}) Completed.'.format(random_id))
     return "blockchain_{}_received_transaction".format(blockchain.chain_id)
 
 @app.route('/node_finished', methods=['POST'])
 def node_finished():
     who = utils.receive(request.data)
     blockchain.peers.append(who)
-    sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='mining')
+    sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='master_node')
     
     
 def shutdown_server():
