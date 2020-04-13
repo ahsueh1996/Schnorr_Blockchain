@@ -49,8 +49,9 @@ class Blockchain:
             height=0,
             mining_difficulty=1,
             start_nounce=self.chain_id*self.nounce_distance)
-        genesis_block.mine()
+        genesis_block = genesis_block.mine()
         self.add_block(genesis_block)
+        log_info("Genesis Block Hash: {}".format(genesis_block.block_hash))
         return
 
     def mint_new_block_and_mine(self):
