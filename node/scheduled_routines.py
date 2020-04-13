@@ -34,6 +34,7 @@ def SCHED_mine_for_block_listener(event):
     current_height = blockchain.chain[[-1]][0].height
     log_info("[SCHED_mine_for_block_listener]({}) Current height {}/{} ... ".format(random_id, current_height, config.END_OF_CHAIN))
     if  current_height >= config.END_OF_CHAIN:
+        dynamic_log_level.reset_user_log_level()
         log_info("[SCHED_mine_for_block_listener]({}) END OF CHAIN reached. ".format(random_id))
         if config.MASTER != None:
             log_info("[SCHED_mine_for_block_listener]({}) Posting to Master @ {} ".format(random_id, config.MASTER))

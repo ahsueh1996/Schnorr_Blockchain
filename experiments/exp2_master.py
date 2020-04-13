@@ -52,7 +52,7 @@ if __name__ == '__main__':
     for p, peer in enumerate(blockchain.peers):
         log_info('Processing peer ({})/({}) @ {} ...'.format(p, len(blockchain.peers), peer))
         for h in range(max_height+1):
-            log_info('\tGetting block ({})/({}) ...'.format(h,max_heights))
+            log_info('\tGetting block ({})/({}) ...'.format(h,max_height))
             response = utils.broadcast(str(h), [peer], "/sync_next_block")
             block_dict = utils.receive(response[0])
             if type(block_dict) == dict:
