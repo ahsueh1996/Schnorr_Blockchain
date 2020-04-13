@@ -30,10 +30,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
     
+    
     ip = requests.get('https://api.ipify.org').text 
     blockchain.update_id_and_peers(999, [], ip=ip+":"+str(port))
     blockchain.pause_mining()
-
+    
+    input('Ready. Press enter to start all nodes....')
+    utils.broadcast("go", [node_registry.nodemap.keys()], "/start")
     print('ap schedule starts....')
     sched.start()
     print('Flask starting...')

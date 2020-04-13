@@ -32,8 +32,8 @@ if __name__ == '__main__':
     
     node_registry.set_port_and_update(port)
     blockchain.update_id_and_peers(node_registry.id, node_registry.peers, ip=node_registry.ip+":"+str(port))
+    blockchain.pause_mining()
     
-    sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
     sched.add_listener(SCHED_mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
     sched.start()
 

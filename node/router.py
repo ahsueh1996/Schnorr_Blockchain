@@ -45,6 +45,12 @@ def EXIT(signal, frame):
 def index():
     return 'root'
 
+@app.route('/start')
+def start():
+    blockchain.resume_mining()
+    sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
+    return 'started'
+
 @app.route('/peer_gossiped_new_block', methods=['POST'])
 def import_block_from_other_node():
     random_id = random.randint(0,5000)
@@ -80,8 +86,10 @@ def post_next_block():
     log_info('[router./sync_next_block]({}) Posting block ({}) for requester...'.format(random_id, idx))
     block_list = blockchain.chain[[idx]]
     if len(block_list) !=0:
-        block_list[0].export_block_to_dict()
-    return json.dumps(block_dict)
+        block_dict = block_list[0].export_block_to_dict()
+        return json.dumps(block_dict)
+    else:
+        return "None"
     
     
 def shutdown_server():
