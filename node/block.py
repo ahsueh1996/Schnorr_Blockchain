@@ -35,7 +35,7 @@ class Block:
         return new_block    
 
     def block_content_to_dict(self):
-        d =  {'timestamp': self.previous_block_hash,
+        d =  {'timestamp': self.timestamp,
               'nounce': self.nounce,
               'transactions': self.transactions,
               'previous_block_hash': self.previous_block_hash,
