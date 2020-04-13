@@ -12,15 +12,15 @@ sys.path.append('.')
 import utils
 from node.blockchain import Blockchain
 from node.node_list import Node_Registry
-from node.scheduled_routines import SCHED_validate_and_add_possible_block, SCHED_validate_and_add_possible_transaction
+from node.scheduled_routines import SCHED_validate_and_add_possible_block, SCHED_validate_and_add_possible_transaction, SCHED_master_node
 from utils import log_info, log_warn, log_error, progress
 
 
 # Instantiate the Node
 app = Flask(__name__)
 CORS(app)
-node_resistry = Node_Registry()
-blockchain = Blockchain(node_resistry.id, node_resistry.peers)
+node_registry = Node_Registry()
+blockchain = Blockchain(node_registry.id, node_registry.peers)
 sched = BackgroundScheduler(standalone=True)
 
 def EXIT(signal, frame):
@@ -59,3 +59,21 @@ def import_transaction_from_other_node():
     log_info("[router./peer_gossiped_new_transaction] Recieved transaction: {}".format(new_transaction_dict['signature']))
     sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain], id='validate_possible_transaction')
     return "blockchain_{}_received_transaction".format(blockchain.chain_id)
+
+@app.route('/node_finished', methods=['POST'])
+def node_finished():
+    who = utils.receive(request.data)
+    blockchain.peers.append(who)
+    sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='mining')
+    
+    
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+
+@app.route('/flask_shutdown', methods=['POST'])
+def flask_shutdown():
+    shutdown_server()
+    return 'Flask Server shutting down...'

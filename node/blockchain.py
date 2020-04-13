@@ -17,11 +17,12 @@ NOUNCE_DISTANCE = config.NOUNCE_DISTANCE
 
 class Blockchain:
 
-    def __init__(self,chain_id=0, peers=[]):
+    def __init__(self,chain_id=0, peers=[], ip="n/a"):
         self.mining_paused = False
         self.transactions_pool = ListDict()
         self.chain = ListDict()
         self.chain_id = chain_id
+        self.node_ip = ip
         self.client = Client()
         self.peers = peers
         self.block_limit = BLOCK_LIMIT
@@ -36,9 +37,10 @@ class Blockchain:
     def resume_mining(self):
         self.mining_paused = False
         
-    def update_id_and_peers(self, chain_id, peers):
+    def update_id_and_peers(self, chain_id, peers, ip):
         self.chain_id = chain_id
         self.peers = peers
+        self.node_ip = ip
 
     def create_genesis_block(self):
         genesis_block = Block(

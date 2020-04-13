@@ -23,6 +23,8 @@ NODE_CSV_FILE = "./node/node_list.csv"
 
 CONNECTION_ADAPTER = "http://"
 
+MASTER="128.100.241.138:5000"
+END_OF_CHAIN = 3
 
 
 

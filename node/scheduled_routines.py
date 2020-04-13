@@ -6,6 +6,7 @@ import datetime
 import requests
 import random
 import apscheduler
+import flask
 
 # Project packages
 sys.path.append('.')
@@ -28,7 +29,13 @@ def SCHED_mine_for_block_listener(event):
     random_id = random.randint(0,1000)
     log_info("[SCHED_mine_for_block_listener]({}) Event '{}' finished... ".format(random_id, event.job_id))
     e_return = event.retval
-    blockchain = e_return['blockchain']        
+    blockchain = e_return['blockchain']    
+
+    if blockchain.chain[[-1]][0].height >= config.END_OF_CHAIN:
+        log_info("[SCHED_mine_for_block_listener]({}) Event '{}' END OF CHAIN reached. ".format(random_id))
+        if config.MASTER != None:
+            utils.broadcast(blockchain.node_ip, [config.MASTER], "/node_finished")
+        return "END OF MINING..."
     
     
     # invoke a function to generate more transactions
@@ -96,3 +103,21 @@ def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, block
     else:
         log_info('[SCHED_validate_and_add_possible_transaction]({}) REJECT new transaction with signature @ {}'.format(random_id, possible_transaction.signature))
         return {'validation': False, 'blockchain': blockchain}
+    
+    
+def SCHED_master_node(blockchain, sched, node_registry):
+    log_info("[SCHED_master_node]({}) Checking if finish flag received form all nodes... ".format(random_id))
+    received = len(blockchain.peers)
+    total_expected = len(node_registry.nodemap.keys())
+    if  received >= total_expected:
+        log_info("[SCHED_master_node]({}) All nodes finished, attempt flask and sched shutdown... ".format(random_id))
+        ''' Allow experiment to take over '''
+        try:
+            utils.broadcast("shutdown_attempt", [blockchain.node_ip], "/flask_shutdown")
+            sched.shutdown()
+            log_warn("sched shutdown (ok)")
+        except apscheduler.schedulers.SchedulerNotRunningError:
+            log_warn("sched shutdown (not ok)")
+            pass
+    else:
+        log_info("[SCHED_master_node]({}) {}/{} received. ".format(random_id,received,total_expected))

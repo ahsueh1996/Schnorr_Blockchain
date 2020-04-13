@@ -1,7 +1,7 @@
 ## Native packages
 import os
 import sys
-import socket
+# import socket
 import random
 from requests import get
 
@@ -13,7 +13,7 @@ import config
 class Node_Registry():
     class _singleton():
         def __init__(self, port, file):
-            self.hostname = socket.gethostname()    
+            # self.hostname = socket.gethostname()    
             self.ip = get('https://api.ipify.org').text 
             self.nodemap = utils.map_csv(utils.read_file(file))
             self.port = ""
