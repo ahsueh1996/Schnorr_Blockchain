@@ -54,7 +54,10 @@ if __name__ == '__main__':
         for h in range(max_height+1):
             log_info('\tGetting block ({})/({}) ...'.format(h,max_height))
             response = utils.broadcast(str(h), [peer], "/sync_next_block")
-            block_dict = utils.receive(response[0])
+            if response[0] != None:
+                block_dict = utils.receive(response[0])
+            else:
+                block_dict = None
             if type(block_dict) == dict:
                 block_hash = block_dict['block_hash']
                 block_height = block_dict['height']
