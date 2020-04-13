@@ -47,18 +47,18 @@ if __name__ == '__main__':
 
     print("\n\n==================== Simulation complete ===============\n\n")
     # collect all blocks from peers
-    max_height = len(node_registry.nodemap.keys())
+    max_height = config.END_OF_CHAIN
     chain = [utils.ListDict() for h in range(max_height+1)]
     for p, peer in enumerate(blockchain.peers):
-        log_info('Processing peer ({})/({}) @ {} ......'.format(p, len(blockchain.peers), peer))
+        log_info('Processing peer ({})/({}) @ {} ...'.format(p, len(blockchain.peers), peer))
         for h in range(max_height+1):
-            log_info('\tGetting block ({}) ......'.format(h))
+            log_info('\tGetting block ({})/({}) ...'.format(h,max_heights))
             response = utils.broadcast(str(h), [peer], "/sync_next_block")
             block_dict = utils.receive(response[0])
             if type(block_dict) == dict:
                 block_hash = block_dict['block_hash']
                 block_height = block_dict['height']
-                log_info('(height,hash) = {},\n\t{}'.format(block_height,block_hash[0:25]))
+                log_info('(height,hash) = {},\n\t\t{}'.format(block_height,block_hash[0:25]))
                 chain[block_height].append(block_hash,block_dict)
             else:
                 log_info('invalid...')
