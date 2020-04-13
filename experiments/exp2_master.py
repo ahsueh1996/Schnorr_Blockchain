@@ -27,6 +27,7 @@ if __name__ == '__main__':
     
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
+    parser.add_argument('-s', '--skip', default=0, type=int, help='skip the simulation')
     args = parser.parse_args()
     port = args.port
     
@@ -35,19 +36,21 @@ if __name__ == '__main__':
     blockchain.update_id_and_peers(999, [], ip=ip+":"+str(port))
     blockchain.pause_mining()
     
-    input('Ready. Press enter to start all nodes....')
-    peers = list(node_registry.nodemap.keys())
-    print("Peers: {}".format(peers))
-    print('ap schedule starts....')
-    sched.start()
-    print('Flask starting...')
-    sched.add_job(SCHED_start_nodes, args=[peers], id='master_start_all_nodes')
-    sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='master_node')
-
-    # Now start the flask app in silent mode    
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)        
-    app.run(host=node_registry.ip, port=port)
+    if args.skip ==0:
+        input('Ready. Press enter to start all nodes....')
+        peers = list(node_registry.nodemap.keys())
+        print("Peers: {}".format(peers))
+        print('ap schedule starts....')
+        sched.start()
+        print('Flask starting...')
+        sched.add_job(SCHED_start_nodes, args=[peers], id='master_start_all_nodes')
+        sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='master_node')
+    
+        # Now start the flask app in silent mode    
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)        
+        app.run(host=node_registry.ip, port=port)
+        
     
 
     print("\n\n==================== Simulation complete ===============\n\n")
