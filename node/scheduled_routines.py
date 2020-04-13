@@ -33,6 +33,7 @@ def SCHED_mine_for_block_listener(event):
     blockchain = e_return['blockchain']    
     
     if event.job_id =='idle' and blockchain.mining_paused:
+        sched = e_return['sched']    
         sched.add_job(SCHED_do_none, args=[blockchain, sched], id='idle')
         return 'idle'
         
