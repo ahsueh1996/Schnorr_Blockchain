@@ -31,7 +31,6 @@ def SCHED_mine_for_block_listener(event):
     log_info("[SCHED_mine_for_block_listener]({}) Event '{}' finished... ".format(random_id, event.job_id))
     e_return = event.retval
     blockchain = e_return['blockchain']    
-    print(blockchain.mining_paused)
     if event.job_id =='my_idle' and blockchain.mining_paused:
         sched = e_return['sched']    
         sched.add_job(SCHED_do_none, args=[blockchain, sched], id='my_idle')
