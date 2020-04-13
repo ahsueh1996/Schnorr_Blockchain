@@ -117,7 +117,15 @@ def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, block
     else:
         log_info('[SCHED_validate_and_add_possible_transaction]({}) REJECT new transaction with signature @ {}'.format(random_id, possible_transaction.signature))
         return {'validation': False, 'blockchain': blockchain}
-    
+
+def SCHED_start_node(peers):
+    random_id = random.randint(0,1000)    
+    log_info("[SCHED_start_node]({}) Wait 3 sec for flask app to launch... ".format(random_id))
+    time.sleep(3)
+    log_info("[SCHED_start_node]({}) Attempt broadcast start signal now... ".format(random_id))
+    utils.broadcast("go", peers, "/start")
+    log_info("[SCHED_start_node]({}) Completed... ".format(random_id))
+    return "start sent"
     
 def SCHED_master_node(blockchain, sched, node_registry):
     random_id = random.randint(0,1000)

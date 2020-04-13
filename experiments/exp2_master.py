@@ -38,10 +38,10 @@ if __name__ == '__main__':
     input('Ready. Press enter to start all nodes....')
     peers = list(node_registry.nodemap.keys())
     print("Peers: {}".format(peers))
-    utils.broadcast("go", peers, "/start")
     print('ap schedule starts....')
     sched.start()
     print('Flask starting...')
+    sched.add_job(SCHED_start_nodes, args=[peers], id='master_start_all_nodes')
     sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='master_node')
 
     # Now start the flask app in silent mode    
