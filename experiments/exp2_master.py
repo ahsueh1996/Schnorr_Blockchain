@@ -84,7 +84,9 @@ if __name__ == '__main__':
     consensus = len(chain[-1]) == 1
     log_info('Consensus: {}'.format(consensus))
     
+    tranasaction_counts = []
     throughputs = []
+    time_per_block = []
     for each in chain[-1]:
         print('\n\n------- back track chain ------')
         total_transactions = len(each['transactions'])
@@ -98,9 +100,13 @@ if __name__ == '__main__':
             curr = chain[curr['height']-1][{prev_hash}]
             total_transactions = total_transactions + len(curr['transactions'])
             start_time = min(start_time, float(curr['timestamp']))
+        
+        tranasaction_counts.append(total_transactions)
         throughputs.append(total_transactions/(end_time-start_time)*1000)  # throughput in trans per sec
+        time_per_block((end_time-start_time)*1000/max_height)
         
     avg_throughput = sum(throughputs)/len(throughputs)
     log_info('Avg throughput: {}'.format(avg_throughput))  
     efficiency = sum(throughputs)/total_number_of_transactions_generated
-    log_info('Efficiency: {}/{} = {}'.format(sum(throughputs),total_number_of_transactions_generated,efficiency))
+    log_info('Efficiency: {}/{} = {}'.format(sum(tranasaction_counts),total_number_of_transactions_generated,efficiency))
+    avg_time_per_block = sum(time_per_block)/len(time_per_block)
