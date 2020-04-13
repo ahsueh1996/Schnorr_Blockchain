@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 # Project packages
 sys.path.append('.')
 import config
-config.NODE_CSV_FILE = "./tests/test4.csv"
+config.NODE_CSV_FILE = "./experiments/exp2.csv"
 import utils
 from utils import log_info, log_warn, log_error, progress
 from node.router import app, blockchain, node_registry, sched, EXIT

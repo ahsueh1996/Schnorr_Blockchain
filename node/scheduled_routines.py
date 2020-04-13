@@ -31,8 +31,10 @@ def SCHED_mine_for_block_listener(event):
     e_return = event.retval
     blockchain = e_return['blockchain']    
 
-    if blockchain.chain[[-1]][0].height >= config.END_OF_CHAIN:
-        log_info("[SCHED_mine_for_block_listener]({}) Event '{}' END OF CHAIN reached. ".format(random_id))
+    current_height = blockchain.chain[[-1]][0].height
+    log_info("[SCHED_mine_for_block_listener]({}) Current height {}/{} ... ".format(random_id, current_height, config.END_OF_CHAIN))
+    if  current_height >= config.END_OF_CHAIN:
+        log_info("[SCHED_mine_for_block_listener]({}) END OF CHAIN reached. ".format(random_id))
         if config.MASTER != None:
             utils.broadcast(blockchain.node_ip, [config.MASTER], "/node_finished")
         return "END OF MINING..."
