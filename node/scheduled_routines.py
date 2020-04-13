@@ -98,16 +98,18 @@ def SCHED_validate_and_add_possible_block(possible_block_dict, blockchain, sched
     
     if blockchain.validate_possible_block(possible_block):
         log_info('[SCHED_validate_and_add_possible_block]({}) Accept new block @ {}'.format(random_id, possible_block.block_hash))
-        blockchain.add_block(possible_block)
         
-
         # we want to kill and restart the mining block
         try:
             log_info('[SCHED_validate_and_add_possible_block]({}) Removing "mining" job...'.format(random_id))
             sched.remove_job('mining')
         except apscheduler.jobstores.base.JobLookupError:
             log_info('[SCHED_validate_and_add_possible_block]({}) No "mining" job found'.format(random_id))
-    
+        
+        
+        blockchain.add_block(possible_block)        # bit of a detail here to remove job first before adding block
+        
+        
         log_info('[SCHED_validate_and_add_possible_block]({}) Restart "mining" job...'.format(random_id))
         sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
         return {'validation': True, 'blockchain': blockchain}

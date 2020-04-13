@@ -60,7 +60,7 @@ if __name__ == '__main__':
         block_height = 0
         while block_height < max_height:
             log_info('\tGetting block ({})/({}) ... latest height obtained: ({})'.format(idx,max_height,block_height))
-            response = utils.broadcast(str(h), [peer], "/sync_next_block")
+            response = utils.broadcast(str(idx), [peer], "/sync_next_block")
             if response[0] != None:
                 block_dict = utils.receive(response[0])
             else:
