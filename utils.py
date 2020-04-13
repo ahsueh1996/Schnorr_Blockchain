@@ -201,6 +201,7 @@ def broadcast(serializable_data, peers, route):
     Use this function with @app.route method=['POST'] functions
     '''
     data = json.dumps(serializable_data)
+    responses = []
     failed = 0
     for i, peer in enumerate(peers):
         peer_broadcast_url = config.CONNECTION_ADAPTER + peer + route
@@ -208,13 +209,17 @@ def broadcast(serializable_data, peers, route):
         try:
             r = requests.post(peer_broadcast_url, data=data)
             progress(i, len(peers), "[utils.broadcast] Post received, reply: ".format(r.content))
+            responses.append(r.json())
         except (ConnectionError, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL) as e:
             log_warn("[utils.broadcast] Post failed")
             failed = failed + 1
+            responses.append(None)
     if failed > 0:
         progress(len(peers), len(peers), "[utils.broadcast] Broadcast incomplete (failed)/(total): {}/{}".format(failed,len(peers)))
     else:
         progress(len(peers), len(peers), "[utils.broadcast] Broadcast complete    ")
+    
+    return responses
         
         
 def receive(serialized_data):
