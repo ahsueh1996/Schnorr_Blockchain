@@ -50,7 +50,7 @@ def import_block_from_other_node():
     log_info('[router./peer_gossiped_new_block]({}) Import block from another node...'.format(random_id))
     new_block_dict = utils.receive(request.data)
     log_info("[router./peer_gossiped_new_block]({}) Recieved block: {}".format(random_id,new_block_dict['block_hash'][:25]))
-    sched.add_job(SCHED_validate_and_add_possible_block, args=[new_block_dict, blockchain, sched], id='validate_possible_block')
+    sched.add_job(SCHED_validate_and_add_possible_block, args=[new_block_dict, blockchain, sched, random_id], id='validate_possible_block')
     log_info('[router./peer_gossiped_new_block]({}) Queued.'.format(random_id))
     return "blockchain_{}_received_block".format(blockchain.chain_id)
 
@@ -61,7 +61,7 @@ def import_transaction_from_other_node():
     log_info('[router./peer_gossiped_new_transaction]({}) Import transaction from another node...'.format(random_id))
     new_transaction_dict = utils.receive(request.data)
     log_info("[router./peer_gossiped_new_transaction]({}) Recieved transaction: {}".format(random_id,new_transaction_dict['signature'][:25]))
-    sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain], id='validate_possible_transaction-'+str(random_id))
+    sched.add_job(SCHED_validate_and_add_possible_transaction, args=[new_transaction_dict, blockchain, random_id], id='validate_possible_transaction-'+str(random_id))
     log_info('[router./peer_gossiped_new_transaction]({}) Queued.'.format(random_id))
     return "blockchain_{}_received_transaction".format(blockchain.chain_id)
 

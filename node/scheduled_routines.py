@@ -36,7 +36,10 @@ def SCHED_mine_for_block_listener(event):
     if  current_height >= config.END_OF_CHAIN:
         log_info("[SCHED_mine_for_block_listener]({}) END OF CHAIN reached. ".format(random_id))
         if config.MASTER != None:
+            log_info("[SCHED_mine_for_block_listener]({}) Posting to Master @ {} ".format(random_id, config.MASTER))
             utils.broadcast(blockchain.node_ip, [config.MASTER], "/node_finished")
+        else:
+            log_info("[SCHED_mine_for_block_listener]({}) Nothing to do.... hanging... ".format(random_id))
         return "END OF MINING..."
     
     if event.job_id == 'mining' or 'possible_block' in event.job_id:
@@ -62,8 +65,9 @@ def SCHED_mine_for_block_listener(event):
         else: 
             log_info("[SCHED_mine_for_block_listener]({}) Mining returned {}".format(random_id, new_block))
 
-def SCHED_validate_and_add_possible_block(possible_block_dict, blockchain, sched):
-    random_id = random.randint(0,1000)
+def SCHED_validate_and_add_possible_block(possible_block_dict, blockchain, sched, random_id):
+    if not random_id:
+        random_id = random.randint(0,1000)
     log_info("[SCHED_validate_and_add_possible_block]({}) Starting routine... ".format(random_id))
     possible_block = Block.from_mined_block_dict(possible_block_dict)
     if blockchain.chain.contains_key(possible_block.block_hash):
@@ -89,8 +93,9 @@ def SCHED_validate_and_add_possible_block(possible_block_dict, blockchain, sched
         log_info('[SCHED_validate_and_add_possible_block]({}) REJECT new block @ {}'.format(random_id, possible_block.block_hash))
         return {'validation': False, 'blockchain': blockchain}
 
-def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, blockchain):
-    random_id = random.randint(0,1000)
+def SCHED_validate_and_add_possible_transaction(possible_transaction_dict, blockchain, random_id):
+    if not random_id:
+        random_id = random.randint(0,1000)
     log_info("[SCHED_validate_and_add_possible_transaction]({}) Starting routine... ".format(random_id))
     possible_transaction = Transaction.from_transaction_dict(possible_transaction_dict)
     if blockchain.transactions_pool.contains_key(possible_transaction.signature):
