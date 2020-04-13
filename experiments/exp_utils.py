@@ -22,8 +22,8 @@ from client.transaction import Transaction
 
 def refreash_configs(router):
     router = reload(router)
-    from node.router import app, blockchain, node_resistry, sched
-    return app, blockchain, node_resistry, sched
+    from node.router import app, blockchain, node_registry, sched
+    return app, blockchain, node_registry, sched
 
 
 # timer.py https://realpython.com/python-timer/

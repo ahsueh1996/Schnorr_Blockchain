@@ -32,7 +32,7 @@ if __name__ == '__main__':
     log_info("[FROM MAIN] Using ECDSA")
     print('================')
     config.DIGITAL_SIGNATURE_ALGO = 'ECDSA'
-    app, blockchain, node_resistry, sched = exp_utils.refreash_configs(router)
+    app, blockchain, node_registry, sched = exp_utils.refreash_configs(router)
     
     log_info("[FROM MAIN] Generating {} transactions...".format(N))
     dynamic_log_level.set_log_level(config.IGNORE)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     log_info("[FROM MAIN] Using SCHNORR")
     print('================')
     config.DIGITAL_SIGNATURE_ALGO = 'SCHNORR'
-    app, blockchain, node_resistry, sched = exp_utils.refreash_configs(router)
+    app, blockchain, node_registry, sched = exp_utils.refreash_configs(router)
     
     log_info("[FROM MAIN] Generating {} transactions...".format(N))
     dynamic_log_level.set_log_level(config.IGNORE)
