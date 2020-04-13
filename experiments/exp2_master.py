@@ -18,7 +18,7 @@ from utils import log_info, log_warn, log_error, progress
 from node.router import app, blockchain, node_registry, sched, EXIT
 from node.block import Block
 from node.blockchain import Blockchain
-from node.scheduled_routines import SCHED_master_node
+from node.scheduled_routines import SCHED_master_node, SCHED_start_nodes
 
 
 
