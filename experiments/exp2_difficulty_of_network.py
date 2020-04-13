@@ -56,10 +56,8 @@ if __name__ == '__main__':
     chain = [utils.ListDict() for h in range(max_height+1)]
     for p, peer in enumerate(blockchain.peers):
         log_info('Processing peer ({})/({}) @ {} ...'.format(p, len(blockchain.peers), peer))
-        idx = 0
-        block_height = 0
-        while block_height < max_height:
-            log_info('\tGetting block ({})/({}) ... latest height obtained: ({})'.format(idx,max_height,block_height))
+        for h in range(max_height+1):
+            log_info('\tGetting block ({})/({}) ...'.format(h,max_height))
             response = utils.broadcast(str(h), [peer], "/sync_next_block")
             if response[0] != None:
                 block_dict = utils.receive(response[0])
@@ -72,7 +70,6 @@ if __name__ == '__main__':
                 chain[block_height].append(block_hash,block_dict)
             else:
                 log_info('invalid...')
-            idx = idx + 1
     log_info('Chain saved: {}'.format([len(each) for each in chain]))
     
     consensus = len(chain[-1]) == 1
