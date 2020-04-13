@@ -45,5 +45,21 @@ if __name__ == '__main__':
     app.run(host=node_registry.ip, port=port)
     
 
-    print("\n\n====================Simulation complete ===============\n\n")
+    print("\n\n==================== Simulation complete ===============\n\n")
+    # collect all blocks from peers
+    max_height = len(node_registry.nodemap.keys())
+    chain = [utils.ListDict() for h in range(max_height+1)]
+    for p, peer in enumerate(blockchain.peers):
+        log_info('Processing peer ({})/({}) @ {} ......'.format(p, len(blockchain.peers), peer))
+        for h in range(max_height+1):
+            log_info('\tGetting block ({}) ......'.format(h))
+            response = utils.broadcast(str(h), [peer], "/sync_next_block")
+            block_dict = utils.receive(response.data)
+            block_hash = block_dict['block_hash']
+            block_height = block_dict['height']
+            chain[block_height].append(block_hash,block_dict)
+    log_info('Chain saved: {}'.format([len(each) for each in chain]))
+            
+    # visualize and save photo of blockchain
     
+    # 

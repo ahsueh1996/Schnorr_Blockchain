@@ -128,3 +128,4 @@ def SCHED_master_node(blockchain, sched, node_registry):
             pass
     else:
         log_info("[SCHED_master_node]({}) {}/{} received. ".format(random_id,received,total_expected))
+    return ""

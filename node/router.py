@@ -1,5 +1,6 @@
 # Native packages
 import sys
+import json
 import signal
 import random
 import requests
@@ -70,6 +71,15 @@ def node_finished():
     who = utils.receive(request.data)
     blockchain.peers.append(who)
     sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='master_node')
+    return "Ok master received. Thank you node."
+    
+@app.route('/sync_next_block', methods=['POST'])
+def post_next_block():
+    random_id = random.randint(0,5000)
+    idx = int(utils.receive(request.data))
+    log_info('[router./sync_next_block]({}) Posting block ({}) for requester...'.format(random_id, idx))
+    block_dict = blockchain.chain[[idx]][0].export_block_to_dict()
+    return json.dumps(block_dict)
     
     
 def shutdown_server():
