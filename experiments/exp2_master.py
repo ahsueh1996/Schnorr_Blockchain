@@ -54,9 +54,12 @@ if __name__ == '__main__':
     # collect all blocks from peers
     max_height = config.END_OF_CHAIN
     chain = [utils.ListDict() for h in range(max_height+1)]
-    for p, peer in enumerate(blockchain.peers):
+    total_number_of_transactions_generated = 0
+    for i, d in enumerate(blockchain.peers):
+        peer = d['who']
+        total_number_of_transactions_generated = total_number_of_transactions_generated + int(d['num_trans_gen'])
         print('\n\n--------------------------')
-        log_info('Processing peer ({})/({}) @ {} ...'.format(p, len(blockchain.peers), peer))
+        log_info('Processing peer ({})/({}) @ {} ...'.format(i, len(blockchain.peers), peer))
         idx = 0
         block_height = 0
         while block_height < max_height:
@@ -98,4 +101,6 @@ if __name__ == '__main__':
         throughputs.append(total_transactions/(end_time-start_time)*1000)  # throughput in trans per sec
         
     avg_throughput = sum(throughputs)/len(throughputs)
-    log_info('Avg throughput: {}'.format(avg_throughput))    
+    log_info('Avg throughput: {}'.format(avg_throughput))  
+    efficiency = sum(throughputs)/total_number_of_transactions_generated
+    log_info('Efficiency: {}/{} = {}'.format(sum(throughputs),total_number_of_transactions_generated,efficiency))

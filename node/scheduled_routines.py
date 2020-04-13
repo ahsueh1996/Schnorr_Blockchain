@@ -59,7 +59,8 @@ def SCHED_mine_for_block_listener(event):
         log_info("[SCHED_mine_for_block_listener]({}) END OF CHAIN reached. ".format(random_id))
         if config.MASTER != None:
             log_info("[SCHED_mine_for_block_listener]({}) Posting to Master @ {} ".format(random_id, config.MASTER))
-            utils.broadcast(blockchain.node_ip, [config.MASTER], "/node_finished")
+            utils.broadcast({'who': blockchain.node_ip, 'num_trans_gen': blockchain.total_num_transactions_generated}\
+                            , [config.MASTER], "/node_finished")
         else:
             log_info("[SCHED_mine_for_block_listener]({}) Nothing to do.... hanging... ".format(random_id))
         return "END OF MINING..."
@@ -72,6 +73,7 @@ def SCHED_mine_for_block_listener(event):
         amount = random.randint(0,config.TRANSACTION_RATE)
         log_info("[SCHED_mine_for_block_listener]({}) Make some new transactions.. ".format(random_id))
         make_more_transactions(amount, blockchain)
+        blockchain.total_num_transactions_generated = blockchain.total_num_transactions_generated + amount
         
     '''
     check if the mining job has finished

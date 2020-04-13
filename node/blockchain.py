@@ -28,6 +28,7 @@ class Blockchain:
         self.block_limit = BLOCK_LIMIT
         self.nounce_distance = NOUNCE_DISTANCE
         self.create_genesis_block()
+        self.total_num_transactions_generated = 0
         log_info("[node.blockchain.Blockchain.__init__] Blockchain created")
 
         

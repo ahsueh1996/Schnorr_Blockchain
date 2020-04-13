@@ -55,10 +55,13 @@ if __name__ == '__main__':
     max_height = config.END_OF_CHAIN
     chain = [utils.ListDict() for h in range(max_height+1)]
     for p, peer in enumerate(blockchain.peers):
+        print('\n\n--------------------------')
         log_info('Processing peer ({})/({}) @ {} ...'.format(p, len(blockchain.peers), peer))
-        for h in range(max_height+1):
-            log_info('\tGetting block ({})/({}) ...'.format(h,max_height))
-            response = utils.broadcast(str(h), [peer], "/sync_next_block")
+        idx = 0
+        block_height = 0
+        while block_height < max_height:
+            log_info('\tGetting block ({})/({}) ... latest height obtained: ({})'.format(idx,max_height,block_height))
+            response = utils.broadcast(str(idx), [peer], "/sync_next_block")
             if response[0] != None:
                 block_dict = utils.receive(response[0])
             else:
@@ -67,9 +70,12 @@ if __name__ == '__main__':
                 block_hash = block_dict['block_hash']
                 block_height = block_dict['height']
                 log_info('(height,hash) = {},\n\t\t{}'.format(block_height,block_hash[0:25]))
+                block_dict['height'] = int(block_dict['height'])
+                block_dict['timestamp'] = float(block_dict['timestamp'])
                 chain[block_height].append(block_hash,block_dict)
             else:
                 log_info('invalid...')
+            idx = idx + 1
     log_info('Chain saved: {}'.format([len(each) for each in chain]))
     
     consensus = len(chain[-1]) == 1
@@ -77,6 +83,7 @@ if __name__ == '__main__':
     
     throughputs = []
     for each in chain[-1]:
+        print('\n\n------- back track chain ------')
         total_transactions = len(each['transactions'])
         end_time = each['timestamp']
         start_time = end_time
@@ -84,9 +91,10 @@ if __name__ == '__main__':
         curr = each
         while curr['height'] > 0:
             prev_hash = curr['previous_block_hash']
+            log_info('Looking for \n\t\tprev block with hash {}\n\t\t at height ({})'.format(prev_hash[0:25],curr['height']-1))
             curr = chain[curr['height']-1][{prev_hash}]
             total_transactions = total_transactions + len(curr['transactions'])
-            start_time = min(start_time, curr['timestamp'])
+            start_time = min(start_time, float(curr['timestamp']))
         throughputs.append(total_transactions/(end_time-start_time)*1000)  # throughput in trans per sec
         
     avg_throughput = sum(throughputs)/len(throughputs)
