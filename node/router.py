@@ -47,7 +47,7 @@ def index():
 
 @app.route('/start')
 def start():
-    log_info('===== START SIGNAL RECEIVED FROM MASTER ====')
+    log_info('===== START SIGNAL RECEIVED ====')
     blockchain.resume_mining()
     sched.add_job(SCHED_mine_for_block, args=[blockchain, sched], id='mining')
     return 'started'

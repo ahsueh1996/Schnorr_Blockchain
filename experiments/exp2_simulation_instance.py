@@ -18,7 +18,7 @@ from utils import log_info, log_warn, log_error, progress
 from node.router import app, blockchain, node_registry, sched, EXIT
 from node.block import Block
 from node.blockchain import Blockchain
-from node.scheduled_routines import SCHED_mine_for_block, SCHED_mine_for_block_listener
+from node.scheduled_routines import SCHED_mine_for_block_listener, SCHED_do_none
 
 
 
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     blockchain.update_id_and_peers(node_registry.id, node_registry.peers, ip=node_registry.ip+":"+str(port))
     blockchain.pause_mining()
     
+    sched.add_job(SCHED_do_none, id='idle')
     sched.add_listener(SCHED_mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
     sched.start()
 
