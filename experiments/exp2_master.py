@@ -36,7 +36,9 @@ if __name__ == '__main__':
     blockchain.pause_mining()
     
     input('Ready. Press enter to start all nodes....')
-    utils.broadcast("go", [node_registry.nodemap.keys()], "/start")
+    peers = node_registry.nodemap.keys()
+    print("Peers: {}".format(peers))
+    utils.broadcast("go", peers, "/start")
     print('ap schedule starts....')
     sched.start()
     print('Flask starting...')
