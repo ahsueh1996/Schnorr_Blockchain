@@ -14,7 +14,7 @@ LOG_FILE = "./log.txt"
 
 
 MINING_REWARD = 1
-MINING_DIFFICULTY = 4
+MINING_DIFFICULTY = 10
 
 BLOCK_LIMIT = 10
 TRANSACTION_RATE = 3 # TRANS_RATE x (nodes in network) / (avg mining time) = load per unit time that the network is dealing with
@@ -25,7 +25,7 @@ NODE_CSV_FILE = "./node/node_list.csv"
 CONNECTION_ADAPTER = "http://"
 
 MASTER="155.138.145.252:5000"
-END_OF_CHAIN = 50
+END_OF_CHAIN = 15
 
 
 
