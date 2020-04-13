@@ -25,7 +25,7 @@ NODE_CSV_FILE = "./node/node_list.csv"
 CONNECTION_ADAPTER = "http://"
 
 MASTER="155.138.145.252:5000"
-END_OF_CHAIN = 60
+END_OF_CHAIN = 10
 
 
 

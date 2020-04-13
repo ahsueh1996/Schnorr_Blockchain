@@ -80,6 +80,7 @@ if __name__ == '__main__':
     
     throughputs = []
     for each in chain[-1]:
+        print('------- back track chain ------')
         total_transactions = len(each['transactions'])
         end_time = each['timestamp']
         start_time = end_time
@@ -87,6 +88,7 @@ if __name__ == '__main__':
         curr = each
         while curr['height'] > 0:
             prev_hash = curr['previous_block_hash']
+            log_info('Looking for \n\t\tprev block with hash {}\n\t\t at height ({})'.format(prev_hash[0:25],curr['height']-1))
             curr = chain[curr['height']-1][{prev_hash}]
             total_transactions = total_transactions + len(curr['transactions'])
             start_time = min(start_time, curr['timestamp'])
