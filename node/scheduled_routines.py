@@ -39,18 +39,17 @@ def SCHED_mine_for_block_listener(event):
             utils.broadcast(blockchain.node_ip, [config.MASTER], "/node_finished")
         return "END OF MINING..."
     
-    
-    # invoke a function to generate more transactions
-    amount = random.randint(0,15)
-    log_info("[SCHED_mine_for_block_listener]({}) Make some new transactions.. ".format(random_id))
-    # dynamic_log_level.set_log_level(0)
-    for i in range(amount):
-        new_transaction = blockchain.client.generate_random_transaction()
-        blockchain.add_transaction(new_transaction)
-        new_transaction.broadcast_transaction(blockchain.peers)
-    # dynamic_log_level.reset_user_log_level()
-    # check if the mining job has finished
-        
+    if event.job_id == 'mining' or 'possible_block' in event.job_id:
+        # invoke a function to generate more transactions
+        amount = random.randint(0,config.TRANSACTION_RATE)
+        log_info("[SCHED_mine_for_block_listener]({}) Make some new transactions.. ".format(random_id))
+        # dynamic_log_level.set_log_level(0)
+        for i in range(amount):
+            new_transaction = blockchain.client.generate_random_transaction()
+            blockchain.add_transaction(new_transaction)
+            new_transaction.broadcast_transaction(blockchain.peers)
+        # dynamic_log_level.reset_user_log_level()
+        # check if the mining job has finished        
         
     if event.job_id == 'mining':
         new_block = e_return['new_block']
