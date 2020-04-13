@@ -55,6 +55,7 @@ if __name__ == '__main__':
     max_height = config.END_OF_CHAIN
     chain = [utils.ListDict() for h in range(max_height+1)]
     for p, peer in enumerate(blockchain.peers):
+        print('\n\n--------------------------')
         log_info('Processing peer ({})/({}) @ {} ...'.format(p, len(blockchain.peers), peer))
         idx = 0
         block_height = 0
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     
     throughputs = []
     for each in chain[-1]:
-        print('------- back track chain ------')
+        print('\n\n------- back track chain ------')
         total_transactions = len(each['transactions'])
         end_time = each['timestamp']
         start_time = end_time
