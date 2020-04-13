@@ -32,9 +32,9 @@ def SCHED_mine_for_block_listener(event):
     e_return = event.retval
     blockchain = e_return['blockchain']    
     
-    if event.job_id =='idle' and blockchain.mining_paused:
+    if event.job_id =='my_idle' and blockchain.mining_paused:
         sched = e_return['sched']    
-        sched.add_job(SCHED_do_none, args=[blockchain, sched], id='idle')
+        sched.add_job(SCHED_do_none, args=[blockchain, sched], id='my_idle')
         return 'idle'
         
     current_height = blockchain.chain[[-1]][0].height
