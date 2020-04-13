@@ -14,7 +14,7 @@ LOG_FILE = "./log.txt"
 
 
 MINING_REWARD = 1
-MINING_DIFFICULTY = 10
+MINING_DIFFICULTY = 8
 
 BLOCK_LIMIT = 10
 TRANSACTION_RATE = 3 # TRANS_RATE x (nodes in network) / (avg mining time) = load per unit time that the network is dealing with
