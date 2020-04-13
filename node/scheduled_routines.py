@@ -150,9 +150,9 @@ def SCHED_start_nodes(peers):
     
 def SCHED_master_node(blockchain, sched, node_registry):
     random_id = random.randint(0,1000)
-    log_info("[SCHED_master_node]({}) Checking if finish flag received form all nodes... ".format(random_id))
     received = len(blockchain.peers)
     total_expected = len(node_registry.nodemap.keys())
+    log_info("[SCHED_master_node]({}) Checking if finish flag received form all ({}) nodes... ".format(random_id, total_expected))
     if  received >= total_expected:
         log_info("[SCHED_master_node]({}) All nodes finished, attempt flask and sched shutdown... ".format(random_id))
         ''' Allow experiment to take over '''
