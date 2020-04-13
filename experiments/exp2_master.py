@@ -93,7 +93,7 @@ if __name__ == '__main__':
             log_info('Looking for \n\t\tprev block with hash {}\n\t\t at height ({})'.format(prev_hash[0:25],curr['height']-1))
             curr = chain[curr['height']-1][{prev_hash}]
             total_transactions = total_transactions + len(curr['transactions'])
-            start_time = min(start_time, float(curr['timestamp'])
+            start_time = min(start_time, float(curr['timestamp']))
         throughputs.append(total_transactions/(end_time-start_time)*1000)  # throughput in trans per sec
         
     avg_throughput = sum(throughputs)/len(throughputs)
