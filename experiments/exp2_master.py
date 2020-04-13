@@ -107,6 +107,7 @@ if __name__ == '__main__':
         
     avg_throughput = sum(throughputs)/len(throughputs)
     log_info('Avg throughput: {}'.format(avg_throughput))  
-    efficiency = sum(throughputs)/total_number_of_transactions_generated
+    efficiency = sum(tranasaction_counts)/total_number_of_transactions_generated
     log_info('Efficiency: {}/{} = {}'.format(sum(tranasaction_counts),total_number_of_transactions_generated,efficiency))
     avg_time_per_block = sum(time_per_block)/len(time_per_block)
+    log_info('Avg time per block: {}'.format(avg_time_per_block)) 
