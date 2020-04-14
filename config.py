@@ -16,7 +16,7 @@ LOG_FILE = "./log.txt"
 MINING_REWARD = 1
 MINING_DIFFICULTY = 4
 
-BLOCK_LIMIT = 50
+BLOCK_LIMIT = 90
 TRANSACTION_RATE = 15 # TRANS_RATE x (nodes in network) / (avg mining time) = load per unit time that the network is dealing with
 NOUNCE_DISTANCE = 10000
 
