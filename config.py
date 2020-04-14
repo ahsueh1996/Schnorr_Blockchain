@@ -2,7 +2,7 @@ import os
 
 ROOT_DIR = os.getcwd()
 
-DIGITAL_SIGNATURE_ALGO = 'ECDSA'
+DIGITAL_SIGNATURE_ALGO = 'SCHNORR'
 HASH_ALGO = 'SHA256'
 
 IGNORE = 0
@@ -18,7 +18,7 @@ MINING_DIFFICULTY = 1
 
 BLOCK_LIMIT = 10
 TRANSACTION_RATE = 3 # TRANS_RATE x (nodes in network) / (avg mining time) = load per unit time that the network is dealing with
-NOUNCE_DISTANCE = 50000
+NOUNCE_DISTANCE = 10000
 
 NODE_CSV_FILE = "./node/node_list.csv"
 

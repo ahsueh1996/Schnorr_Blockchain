@@ -76,7 +76,8 @@ def import_transaction_from_other_node():
 @app.route('/node_finished', methods=['POST'])
 def node_finished():
     d = utils.receive(request.data)
-    blockchain.peers.append(d)
+    if d not in blockchain.peers:
+        blockchain.peers.append(d)
     sched.add_job(SCHED_master_node, args=[blockchain, sched, node_registry], id='master_node')
     return "Ok master received. Thank you node."
     
