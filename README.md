@@ -1,5 +1,7 @@
 # Schnorr Signature for Blockchain 🌐
 
+[Final Paper](https://github.com/ahsueh1996/Schnorr_Blockchain/blob/master/White%20Paper%20-%20Schnorr%20Signature%20For%20Blockchains.pdf)
+
 ## Table of Contents
 - [Background](#background)
 - [Method](#method)
